@@ -31,7 +31,12 @@ Module.register("camera", {
     return wrapper;
   },
 
-   initCamera(videoElement) {
+  initCamera(videoElement) {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      console.error("Camera access not supported in this browser.");
+      return;
+    }
+
     navigator.mediaDevices.getUserMedia({ video: true, audio: false })
       .then((stream) => {
         videoElement.srcObject = stream;
