@@ -1,0 +1,32 @@
+{
+  "name": "mmm-template",
+  "version": "1.0.0",
+  "description": "[Module description]",
+  "main": "MMM-Template.js",
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "node --run lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+[GitHub url].git"
+  },
+  "keywords": [
+    "template"
+  ],
+  "author": "[Author]",
+  "license": "MIT",
+  "bugs": {
+    "url": "[GitHub url]/issues"
+  },
+  "homepage": "[GitHub url]#readme",
+  "devDependencies": {
+    "@eslint/css": "^0.8.1",
+    "@eslint/js": "^9.27.0",
+    "@eslint/markdown": "^6.4.0",
+    "@stylistic/eslint-plugin": "^4.4.0",
+    "eslint": "^9.27.0",
+    "globals": "^16.2.0"
+  }
+}
