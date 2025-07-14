@@ -2,10 +2,10 @@
   --color-text: #999;
   --color-text-dimmed: #666;
   --color-text-bright: #fff;
-  --color-background: #000;
+  --color-background: transparent;
   --font-primary: "Roboto Condensed";
   --font-secondary: "Roboto";
-  --font-size: 20px;
+  --font-size: 16px;
   --font-size-xsmall: 0.75rem;
   --font-size-small: 1rem;
   --font-size-medium: 1.5rem;
@@ -19,10 +19,10 @@
 }
 
 html {
-  cursor: none;
-  overflow: hidden;
+  /* cursor: none; */
+  /* overflow: hidden; */
   background: var(--color-background);
-  user-select: none;
+  /* user-select: none; */
   font-size: var(--font-size);
 }
 

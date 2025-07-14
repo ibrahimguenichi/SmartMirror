@@ -10,6 +10,9 @@ DB_CONTAINER := SmartMirror-db
 # Default env file
 ENV_FILE := .env.dev
 
+PORT ?= 8080
+SUBDOMAIN ?= smartMirror-dev
+
 # Targets
 .PHONY: db-up db-down db-logs db-status db-restart db-shell mailpit-up
 
@@ -47,3 +50,12 @@ db-shell:
 mailpit-up:
 	@echo "📧 Starting Mailpit container..."
 	$(START_MAILPIT_SCRIPT)
+
+run-ai:
+	cd /mnt/e/PFE-Dhia/AI_backend && . myenv/bin/activate && uvicorn main:app --host 0.0.0.0 --port 8000
+
+run-back:
+	cd /mnt/e/PFE-Dhia/SmartMirror && mvn spring-boot:run
+
+run-tunnel:
+	ngrok http --url=assuring-stirring-pug.ngrok-free.app 9090

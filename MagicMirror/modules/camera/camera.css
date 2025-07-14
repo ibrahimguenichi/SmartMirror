@@ -1,15 +1,167 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden; /* Optional: disables scrolling */
+}
+
+
 #camera-wrapper {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -1; /* behind everything */
+  width: 100%;
+  height: 100%;
   overflow: hidden;
 }
 
 #camera-stream {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transform: scaleX(-1); /* Mirror for selfie view */
+  z-index: -100;
+}
+
+#scanner-overlay {
+  position: absolute;
+  display: none;
+  pointer-events: none;
+  z-index: 10;
+
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.8); /* White border */
+  box-shadow:
+    0 0 15px rgba(255, 255, 255, 0.4),
+    0 0 40px rgba(255, 255, 255, 0.2); /* White glow effect */
+  overflow: hidden;
+  opacity: 0;
+  transition: all 0.3s ease, opacity 0.4s ease;
+}
+
+#scanner-overlay.active {
+  display: block;
+  opacity: 1;
+}
+
+#scanner-overlay::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.85),
+    transparent
+  ); /* White scanning line */
+  animation: scanline 3s linear infinite;
+}
+
+@keyframes scanline {
+  0% {
+    top: 0%;
+  }
+  100% {
+    top: 100%;
+  }
+}
+
+
+/* Base container hidden by default */
+#qr-container {
+  display: none;
+}
+
+/* Displayed container with aesthetic enhancements */
+#qr-container-displayed {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  background: linear-gradient(
+    145deg,
+    rgba(26, 26, 26, 0.6),
+    rgba(15, 15, 15, 0.6)
+  ); /* More transparent background */
+  
+  padding: 30px 40px;
+  border-radius: 20px;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.5),
+    0 0 15px rgba(255, 255, 255, 0.1);
+
+  text-align: center;
+  z-index: 20;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+
+  max-width: 300px;
+  width: 80%;
+  animation: fadeInScale 0.4s ease-out forwards;
+    backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* QR code message */
+#qr-message {
+  color: #e0e0e0;
+  font-size: 17px;
+  line-height: 1.5;
+  font-family: "Segoe UI", sans-serif;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  margin: 0;
+}
+
+/* QR canvas styles */
+#qr-canvas {
+  width: 220px;
+  height: 220px;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
+}
+
+/* Smooth entrance animation */
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.region.fullscreen.above {
+  position: fixed; /* <- was relative, changed */
+  top: 0;
+  left: 0;
   width: 100vw;
   height: 100vh;
-  object-fit: cover;
+  pointer-events: none; /* optional if you want clicks to pass through */
+  z-index: 9990; /* make sure it's not under anything */
+}
+
+
+#react-microfrontend {
+  position: absolute;
+  top: 40px;                  /* margin from the top */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 1000px;
+  background-color: rgba(255, 255, 255, 0.95);
+  color: black;
+  border-radius: 12px 12px 0 0;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  z-index: 99999;
 }

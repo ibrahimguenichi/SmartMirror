@@ -1,11 +1,13 @@
-package net.javaguides.testpfe_backend.auth;
+package net.javaguides.testpfe_backend.config.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import net.javaguides.testpfe_backend.auth.Oauth2LoginSuccessHandler;
 import net.javaguides.testpfe_backend.config.ApplicationProperties;
+import net.javaguides.testpfe_backend.config.security.filter.JwtRequestFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -20,7 +22,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
@@ -44,9 +45,11 @@ public class SecurityConfiguration {
     private final ApplicationProperties applicationProperties;
     private final UserDetailsService userDetailsService;
     private final Oauth2LoginSuccessHandler oauth2LoginSuccessHandler;
+    private final JwtRequestFilter jwtRequestFilter;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtRequestFilter jwtRequestFilter) throws Exception {
         http.authorizeHttpRequests(customizer -> {
             customizer
                     .requestMatchers("/swagger-ui/**",
@@ -68,6 +71,7 @@ public class SecurityConfiguration {
                     .requestMatchers(antMatcher(HttpMethod.POST, "/api/notifications/delivery/**")).permitAll()
                     .requestMatchers(antMatcher(HttpMethod.POST, "/api/face-recognition/**")).permitAll()
                     .requestMatchers(antMatcher(HttpMethod.POST, "/api/auth/face_login")).permitAll()
+                    .requestMatchers(antMatcher(HttpMethod.POST, "/api/users/*/profile-image")).permitAll()
                     .anyRequest().authenticated();
         });
 
@@ -82,8 +86,9 @@ public class SecurityConfiguration {
                     });
         });
 
-        http.addFilterBefore(new UsernamePasswordAuthenticationFilter(), LogoutFilter.class);
+        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         http.userDetailsService(userDetailsService);
+        http.exceptionHandling(ex -> ex.authenticationEntryPoint(customAuthenticationEntryPoint));
 
         http.csrf(AbstractHttpConfigurer::disable); //TODO: Implement jwt token based authentication
 

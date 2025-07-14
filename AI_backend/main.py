@@ -21,7 +21,7 @@ async def extract_embedding(userId: int, file: UploadFile = File(...)):
         print(f"Embedding extracted: {embedding[:5]}...")
 
         # Send to Spring Boot backend
-        response = send_embedding(userId, embedding.tolist(), "http://localhost:8080/api/face-recognition/save_embedding")
+        response = send_embedding(userId, embedding.tolist(), "http://localhost:9090/api/face-recognition/save_embedding")
         print(f"Response from Spring Boot: {response}")
 
         # return {"status": "success", "embeddings": embedding.tolist(), "backend_response": response}

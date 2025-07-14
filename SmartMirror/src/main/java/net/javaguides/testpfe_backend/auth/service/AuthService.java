@@ -5,7 +5,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javaguides.testpfe_backend.auth.SecurityUtil;
-import net.javaguides.testpfe_backend.auth.dto.FaceLoginRequest;
 import net.javaguides.testpfe_backend.auth.dto.LoginRequest;
 import net.javaguides.testpfe_backend.faceRecognition.dto.FaceDataWithDistanceDTO;
 import net.javaguides.testpfe_backend.faceRecognition.service.IFaceRecognitionService;
@@ -21,6 +20,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
@@ -38,6 +39,7 @@ public class AuthService {
     private final SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
     SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
     private final IFaceRecognitionService faceRecognitionService;
+    private final UserDetailsService userDetailsService;
 
     /**
      * Sets the cookie for the user if the username and password are correct
@@ -68,7 +70,7 @@ public class AuthService {
         this.logoutHandler.logout(request, response, authentication);
     }
 
-    public UserResponse loginWithFace(HttpServletRequest request,
+    public User loginWithFace(HttpServletRequest request,
                               HttpServletResponse response,
                               float[] embedding
     ) {
@@ -87,19 +89,22 @@ public class AuthService {
         User user = userRepository.findById(faceData.getUserId())
                 .orElseThrow(() -> ApiException.builder().statusCode(404).message("User not found").build());
 
-        // Create Spring Authentication token
-        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-                user.getEmail(), null, user.getAuthorities()  // You might have a custom `getAuthorities()`
-        );
+        // 3. Create Authentication token manually
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
 
-        // Set up Spring Security Context manually
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+        // 4. Set it in the SecurityContext
         SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
         SecurityContext context = securityContextHolderStrategy.createEmptyContext();
-        context.setAuthentication(token);
+        context.setAuthentication(authentication);
         securityContextHolderStrategy.setContext(context);
+
+        // 5. Persist the context (for session-based auth)
         securityContextRepository.saveContext(context, request, response);
 
-        return new UserResponse(user);
+        return user;
     }
 
 }

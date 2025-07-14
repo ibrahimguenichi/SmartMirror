@@ -54,7 +54,8 @@
 		"test:markdown": "markdownlint-cli2 .",
 		"test:prettier": "prettier . --check",
 		"test:spelling": "cspell . --gitignore",
-		"test:unit": "NODE_ENV=test jest --selectProjects unit"
+		"test:unit": "NODE_ENV=test jest --selectProjects unit",
+		"tunnel": "lt --port 8080"
 	},
 	"lint-staged": {
 		"*": "prettier --write",
@@ -77,6 +78,7 @@
 		"moment": "^2.30.1",
 		"node-ical": "^0.20.1",
 		"pm2": "^5.4.3",
+		"qrcode": "^1.5.4",
 		"socket.io": "^4.8.1",
 		"suncalc": "^1.9.0",
 		"systeminformation": "^5.25.11",

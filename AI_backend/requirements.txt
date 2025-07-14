@@ -5,3 +5,5 @@ requests
 fastapi
 uvicorn
 python-multipart
+onnxruntime
+onnxruntime-gpu

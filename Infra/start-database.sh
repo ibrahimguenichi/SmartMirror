@@ -1,49 +1,50 @@
 #!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
 
+# Check for Docker
 if ! command -v docker &> /dev/null; then
-  echo "Docker is not installed. Please install Docker and try again."
+  echo "❌ Docker is not installed. Please install Docker and try again."
   exit 1
 fi
 
-# Check for either docker-compose or docker compose
+# Determine the correct docker-compose command
 if command -v docker-compose &> /dev/null; then
   COMPOSE_COMMAND="docker-compose"
 elif docker compose version &> /dev/null; then
   COMPOSE_COMMAND="docker compose"
 else
-  echo "Docker Compose is not installed. Please install Docker Compose and try again."
+  echo "❌ Docker Compose is not installed. Please install Docker Compose and try again."
   exit 1
 fi
 
+# Load .env.dev if it exists
 if [ -f ".env.dev" ]; then
-  echo "Loading environment variables from .env.dev"
-  export $(grep -v '^#' .env.dev | xargs)
+  echo "🟢 Loading environment variables from .env.dev"
+  # Export each variable from .env.dev (skip comments and empty lines)
+  export $(grep -v '^#' .env.dev | xargs -d '\n')
 else
-  echo "Warning: .env.dev not found. Make sure you have it for DB credentials."
+  echo "⚠️  Warning: .env.dev not found. Using defaults or inline variables."
 fi
 
-echo "Starting PostgreSQL container using $COMPOSE_COMMAND..."
+# Start Docker containers
+echo "🟢 Starting PostgreSQL container using $COMPOSE_COMMAND..."
 $COMPOSE_COMMAND up -d
-if [ $? -ne 0 ]; then
-  echo "Failed to start containers. Exiting."
-  exit 1
-fi
 
-echo "Waiting for database to initialize..."
+echo "⏳ Waiting for database to initialize..."
 
-# Wait for Postgres to be ready (max 30 seconds)
+# Wait for PostgreSQL to be ready (timeout after 30 seconds)
 for i in {1..30}; do
-  docker exec SmartMirror-db pg_isready -U "$DB_USER" > /dev/null 2>&1 && break
-  echo "Waiting for PostgreSQL to be ready... ($i)"
+  if docker exec SmartMirror-db pg_isready -U "${DB_USER:-postgres}" > /dev/null 2>&1; then
+    echo "✅ PostgreSQL is ready."
+    break
+  fi
+  echo "⏳ Waiting... ($i)"
   sleep 1
 done
 
-# Check if pgvector is installed, if not create extension
-echo "Ensuring pgvector extension is available..."
-docker exec SmartMirror-db psql -U "$DB_USER" -d "$DB_NAME" -c "CREATE EXTENSION IF NOT EXISTS vector;"
-if [ $? -ne 0 ]; then
-  echo "Failed to create pgvector extension."
-  exit 1
-fi
+# Ensure pgvector extension exists
+echo "🛠️  Creating pgvector extension if needed..."
+docker exec SmartMirror-db psql -U "${DB_USER:-postgres}" -d "${DB_NAME:-smartmirror}" -c "CREATE EXTENSION IF NOT EXISTS vector;"
 
-echo "PostgreSQL container is up and running with pgvector."
+echo "✅ PostgreSQL container is up and running with pgvector."
