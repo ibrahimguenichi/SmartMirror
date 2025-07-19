@@ -8,6 +8,9 @@ import ResetPassword from '@/pages/ResetPassword';
 import 'react-toastify/dist/ReactToastify.css';
 import '@/App.css';
 import UserProfile from './pages/UserProfile';
+import Organization from './pages/Organization';
+import Task from './pages/Task';
+import Ai from './pages/Ai';
 
 const App = () => {
   return (
@@ -20,6 +23,9 @@ const App = () => {
         <Route path="/email-verify" element={<EmailVerify />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path='/profile' element={<UserProfile />} />
+        <Route path='/organization' element={<Organization />} />
+        <Route path='/task' element={<Task />} />
+        <Route path='/ai' element={<Ai />} />
         <Route path="*" element={<div className="text-mirror-text text-lg text-center mt-10">404 - Page Not Found</div>} />
       </Routes>
     </div>

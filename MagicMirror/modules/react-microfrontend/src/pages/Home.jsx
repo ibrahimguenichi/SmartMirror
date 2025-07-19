@@ -1,11 +1,63 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import { AppContext } from '../context/AppContext';
+import Layout from '../components/Layout';
+import {
+  Box,
+  Flex,
+  Heading,
+  Text,
+  Avatar,
+  Button,
+  Icon, 
+  useColorModeValue
+} from "@chakra-ui/react";
+import { FaUser, FaBuilding, FaPlusCircle, FaRobot } from "react-icons/fa";
+
+const userData = {
+  id: 1,
+  fullname: "ibrahim"
+}
+
 
 const Home = () => {
-  const { userData, setIsLoggedIn, setUserData, isLoggedIn } = useContext(AppContext);
+  //const { userData, setIsLoggedIn, setUserData, isLoggedIn } = useContext(AppContext);
   const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const bg = useColorModeValue("white", "gray.800");
+  const border = useColorModeValue("gray.200", "gray.700");
+
+  const cardData = [
+    {
+      icon: FaUser,
+      title: "My Profile",
+      onClick: () => {
+        navigate("/profile")
+      },
+    },
+    {
+      icon: FaBuilding,
+      title: "Organization",
+      onClick: () => {
+        navigate("/organization")
+      },
+    },
+    {
+      icon: FaPlusCircle,
+      title: "New Task",
+      onClick: () => {
+        navigate("/task")
+      },
+    },
+    {
+      icon: FaRobot,
+      title: "Orange AI",
+      onClick: () => {
+        navigate("/ai")
+      },
+    },
+  ];
 
   const handleLogout = () => {
     setIsLoggedIn(false);
@@ -20,46 +72,121 @@ const Home = () => {
   return (
     <div className="h-screen w-full bg-gradient-to-b from-background to-accent">
       <Header />
-      <div className="flex-1 flex flex-col justify-center items-center text-mirror-text text-lg p-8">
-        {isLoggedIn ? (
-          // Logged in content
-          <div className="text-center space-y-6">
-            <h1 className="text-3xl font-light text-orange-500">
-              Welcome, {userData?.username || userData?.firstName || 'User'}!
-            </h1>
-            <p className="text-white/70 text-lg">
-              You have successfully logged in to SmartMirror
-            </p>
-            <div className="space-y-4">
-              <div className="bg-black/20 p-4 rounded-lg">
-                <p className="text-white/80">User ID: {userData?.id || 'N/A'}</p>
-                <p className="text-white/80">Username: {userData?.username || userData?.firstName || 'N/A'}</p>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="bg-orange-500 text-black px-6 py-3 rounded-lg text-sm font-medium hover:bg-orange-600 transition-all duration-200"
+      <Layout className="w-full mx-auto gap-6 flex flex-col min-h-screen">
+        <Box
+          borderRadius="xl"
+          p={8}
+          shadow="md"
+          w="full"
+        >
+          {isLoggedIn? (
+            <Flex
+            direction={{ base: "column", md: "row" }}
+            align="center"
+            justify="space-between"
+            gap={6}
+          >
+            <Box w="80%">
+              <Heading size="lg" mb={2} fontWeight="medium">
+                Welcome back,{" "}
+                <Text as="span" className='text-orange-500' fontWeight="semibold">
+                  {userData?.fullname || userData?.firstName || "User"}!
+                </Text>
+              </Heading>
+              <Text className='text-orange-500' fontSize="md" color="gray.600">
+                What's on the agenda today?
+              </Text>
+            </Box>
+            <Avatar
+              size="xl"
+              name="Sohaib Tiss"
+              src={userData.imgURL}
+              bg="hsl(var(--orange-primary))"
+              color="white"
+            />
+          </Flex>
+          ): (
+            <Flex
+              direction="column"
+              align="center"
+              justify="center"
+              p={8}
+              bg="white"
+              borderRadius="xl"
+              boxShadow="md"
+              textAlign="center"
+            >
+              <Heading size="lg" mb={2}>
+                Welcome to the Dashboard!
+              </Heading>
+              <Text fontSize="md" color="gray.600" mb={4}>
+                Please log in to access your personalized content.
+              </Text>
+              {/* You can replace the buttons below with actual routing/actions */}
+              <Flex gap={4}>
+                <Button colorScheme="teal" variant="solid">
+                  Log In
+                </Button>
+                <Button colorScheme="teal" variant="outline">
+                  Sign Up
+                </Button>
+              </Flex>
+            </Flex>
+          )}
+          
+        </Box>
+
+        <Flex
+          justify="space-between"
+          align="center"
+          wrap="wrap"
+          gap={4}
+          py={6}
+          className='mt-10'
+        >
+          {cardData.map(({ icon, title, onClick }, index) => (
+            <Box
+              key={index}
+              flex="1 1 20%"
+              minW="200px"
+              maxW="250px"
+              bg={bg}
+              border="1px solid"
+              borderColor={border}
+              borderRadius="xl"
+              p={6}
+              textAlign="center"
+              boxShadow="md"
+              transition="background 0.3s ease"
+              _hover={{
+                bg: "hsl(var(--orange-light))",
+                cursor: "pointer", // optional
+              }}
+              onClick={onClick}
+            >
+              <Flex
+                direction="column"
+                align="center"
+                justify="space-between"
+                gap={4}
               >
-                Logout
-              </button>
-            </div>
-          </div>
-        ) : (
-          // Default content when not logged in
-          <div className="text-center space-y-6">
-            <h1 className="text-3xl font-light text-orange-500">
-              Welcome to SmartMirror
-            </h1>
-            <p className="text-white/70 text-lg">
-              Your intelligent mirror experience powered by Orange Tunisia
-            </p>
-            <div className="space-y-4">
-              <div className="bg-black/20 p-4 rounded-lg">
-                <p className="text-white/80">Please login or sign up to access your personalized dashboard</p>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+                <Icon as={icon} boxSize={10} color="hsl(var(--orange-primary))" mb={4} />
+                <Heading as="h3" size="md">
+                  {title}
+                </Heading>
+              </Flex>
+            </Box>
+          ))}
+        </Flex>
+
+        <Box mt={10} py={6} textAlign="center" fontSize="sm">
+          Welcome to{" "}
+          <Text as="span" color="orange.400">
+            Orange Tunisia FabLabs
+          </Text>{" "}
+          — Empowering local innovation with smart technology.
+        </Box>
+      </Layout>
     </div>
   );
 };
