@@ -31,9 +31,9 @@ const Home = () => {
     },
     {
       icon: FaBuilding,
-      title: 'Organization',
+      title: 'My Reservations',
       onClick: () => {
-        navigate('/organization');
+        navigate('/reservations');
       },
     },
     {
@@ -52,13 +52,11 @@ const Home = () => {
     },
   ];
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUserData(null);
-    // Clear window.userData if it exists
-    if (window.userData) {
-      delete window.userData;
-    }
+  const handleSignup = () => {
+    navigate('/signup');
+  };
+
+  const handleLogin = () => {
     navigate('/login');
   };
 
@@ -67,6 +65,7 @@ const Home = () => {
       <Layout className='w-full mx-auto gap-6 flex flex-col min-h-screen'>
         <Box borderRadius='xl' p={8} shadow='md' w='full'>
           {isLoggedIn ? (
+            <>
             <Flex
               direction={{ base: 'column', md: 'row' }}
               align='center'
@@ -100,40 +99,7 @@ const Home = () => {
                 color='white'
               />
             </Flex>
-          ) : (
             <Flex
-              direction='column'
-              align='center'
-              justify='center'
-              p={8}
-              bg='white'
-              borderRadius='xl'
-              boxShadow='md'
-              textAlign='center'
-            >
-              <Heading size='lg' mb={2}>
-                Welcome to the Dashboard!
-              </Heading>
-              <Text fontSize='md' color='gray.600' mb={4}>
-                Please log in to access your personalized content.
-              </Text>
-              <Flex gap={4}>
-                <Button colorScheme='teal' variant='solid'>
-                  Log In
-                </Button>
-                <Button
-                  colorScheme='teal'
-                  variant='outline'
-                  onClick={handleLogout}
-                >
-                  Sign Up
-                </Button>
-              </Flex>
-            </Flex>
-          )}
-        </Box>
-
-        <Flex
           justify='space-between'
           align='center'
           wrap='wrap'
@@ -180,9 +146,42 @@ const Home = () => {
             </Box>
           ))}
         </Flex>
+        </>
+          ) : (
+            <Flex
+              direction='column'
+              align='center'
+              justify='center'
+              p={8}
+              bg='white'
+              borderRadius='xl'
+              boxShadow='md'
+              textAlign='center'
+            >
+              <Heading size='lg' mb={2}>
+                Welcome to the Dashboard!
+              </Heading>
+              <Text fontSize='md' color='gray.600' mb={4}>
+                Please log in to access your personalized content.
+              </Text>
+              <Flex gap={4}>
+                <Button colorScheme='orange' variant='solid' onClick={handleLogin}>
+                  Log In
+                </Button>
+                <Button
+                  colorScheme='orange'
+                  variant='outline'
+                  onClick={handleSignup}
+                >
+                  Sign Up
+                </Button>
+              </Flex>
+            </Flex>
+          )}
+        </Box>
 
         <Box
-          mt={10}
+          mt="auto"
           py={6}
           textAlign='center'
           fontSize='sm'

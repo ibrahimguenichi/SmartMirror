@@ -87,7 +87,7 @@ async function detectAndSend(video) {
       return;
     }
 
-    const signupURL = "https://suitable-fly-witty.ngrok-free.app/home/signup"; // Replace with real URL
+    const signupURL = "dinosaur-pet-ladybird.ngrok-free.app/home/signup"; // Replace with real URL
     complementsContainer.style.display = "none";
     qrContainer.id = "qr-container-displayed";
 

@@ -18,13 +18,15 @@ else
   exit 1
 fi
 
-# Load .env.dev if it exists
-if [ -f ".env.dev" ]; then
-  echo "🟢 Loading environment variables from .env.dev"
-  # Export each variable from .env.dev (skip comments and empty lines)
-  export $(grep -v '^#' .env.dev | xargs -d '\n')
+# Load .env if it exists
+if [ -f ".env" ]; then
+  echo "🟢 Loading environment variables from .env"
+  # Properly export variables from .env (skip comments and empty lines)
+  set -a
+  source .env
+  set +a
 else
-  echo "⚠️  Warning: .env.dev not found. Using defaults or inline variables."
+  echo "⚠️  Warning: .env not found. Using defaults or inline variables."
 fi
 
 # Start Docker containers
@@ -42,6 +44,12 @@ for i in {1..30}; do
   echo "⏳ Waiting... ($i)"
   sleep 1
 done
+
+# Check if PostgreSQL is still not ready after the loop
+if ! docker exec SmartMirror-db pg_isready -U "${DB_USER:-postgres}" > /dev/null 2>&1; then
+  echo "❌ PostgreSQL failed to start within 30 seconds."
+  exit 1
+fi
 
 # Ensure pgvector extension exists
 echo "🛠️  Creating pgvector extension if needed..."

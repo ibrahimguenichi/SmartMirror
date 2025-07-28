@@ -2,8 +2,8 @@ import { VStack, Text, useRadioGroup, SimpleGrid } from '@chakra-ui/react';
 import RadioCard from './RadioCard';
 
 const options = [
-  { value: 'Adult', label: 'Adult' },
-  { value: 'Kid', label: 'Kid' },
+  { value: 'ADULT', label: 'Adult' },
+  { value: 'KID', label: 'Kid' },
 ];
 
 export default function AudienceSelect({ onSelect, value }) {

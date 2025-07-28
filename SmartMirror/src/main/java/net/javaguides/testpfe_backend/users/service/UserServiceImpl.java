@@ -55,7 +55,7 @@ public class UserServiceImpl implements IUserService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         // Get the root directory from environment variable
-        String parentDir = "/mnt/e/PFE-Dhia/Images_db";
+        String parentDir = "/mnt/c/Users/Dhia/onedrive/bureau/smartmirror";
         if (parentDir == null || parentDir.isBlank()) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Image_root_dir environment variable is not set");
         }

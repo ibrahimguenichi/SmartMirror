@@ -16,15 +16,25 @@ import TaskSelect from '../components/TaskSelect';
 import DateSelect from '../components/DateSelect';
 import TimeSelect from '../components/TimeSelect';
 import Summary from '../components/Summary';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+import { AppContext } from '../context/AppContext';
+import { useContext } from 'react';
 
 export default function Task() {
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    type: '',
-    ageGroup: '',
+    activity: '',
+    ageClass: '',
     task: '',
     date: '',
-    time: '',
+    startTime: '',
+    duration: 'PT1H'
   });
+  const { backendURL } = useContext(AppContext);
+
+  const navigate = useNavigate();
 
   const isFormComplete = Object.values(formData).every((value) => value !== '');
 
@@ -35,16 +45,34 @@ export default function Task() {
 
   const handleRestart = () => {
     setFormData({
-      type: '',
-      ageGroup: '',
+      activity: '',
+      ageClass: '',
       task: '',
       date: '',
-      time: '',
+      startTime: '',
+      duration: 'PT1H'
     });
   };
 
-  const handleConfirm = () => {
-    console.log('This is the data you picked:', formData);
+  const handleConfirm = async (e) => {
+    // console.log('This is the data you picked:', formData);
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      axios.defaults.withCredentials = true;
+      const response = await axios.post(`${backendURL}/reservation`, formData);
+      if(response && response.status === 200) {
+        toast.success("Reservation added successfully");
+        setIsLoading(false);
+        navigate("/home");
+      } else {
+        response.data.errors.map((error) => {toast.error(error)});
+      }
+    } catch(err) {
+      console.error("Reservation failed", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -63,7 +91,7 @@ export default function Task() {
             <Stack spacing={6} flex='2'>
               <ActivitySelect
                 value={formData.type}
-                onSelect={(val) => handleSelect('type', val)}
+                onSelect={(val) => handleSelect('activity', val)}
               />
 
               <AudienceSelect
@@ -91,7 +119,7 @@ export default function Task() {
 
                 <TimeSelect
                   value={formData.time}
-                  onSelect={(val) => handleSelect('time', val)}
+                  onSelect={(val) => handleSelect('startTime', val)}
                 />
               </Flex>
             </Stack>
@@ -105,8 +133,9 @@ export default function Task() {
                 </Button>
                 <Button
                   colorScheme='orange'
-                  isDisabled={!isFormComplete}
+                  // isDisabled={!isFormComplete}
                   onClick={handleConfirm}
+                  isLoading={isLoading}
                 >
                   Confirm
                 </Button>

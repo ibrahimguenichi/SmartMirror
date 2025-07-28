@@ -72,6 +72,7 @@ public class SecurityConfiguration {
                     .requestMatchers(antMatcher(HttpMethod.POST, "/api/face-recognition/**")).permitAll()
                     .requestMatchers(antMatcher(HttpMethod.POST, "/api/auth/face_login")).permitAll()
                     .requestMatchers(antMatcher(HttpMethod.POST, "/api/users/*/profile-image")).permitAll()
+                    .requestMatchers(antMatcher(HttpMethod.POST, "/api/reservation")).permitAll()
                     .anyRequest().authenticated();
         });
 

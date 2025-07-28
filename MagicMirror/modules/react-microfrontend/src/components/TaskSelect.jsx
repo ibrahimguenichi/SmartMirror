@@ -2,10 +2,10 @@ import { VStack, Text, useRadioGroup, SimpleGrid } from '@chakra-ui/react';
 import RadioCard from './RadioCard';
 
 const options = [
-  { value: 'Fabrication 3D', label: 'Fabrication 3D' },
-  { value: 'Coupe Laser', label: 'Coupe Laser' },
-  { value: 'Fabrication Electronique', label: 'Fabrication Electronique' },
-  { value: 'Conception', label: 'Conception' },
+  { value: 'FABRICATION_3D', label: 'Fabrication 3D' },
+  { value: 'COUPE_LASER', label: 'Coupe Laser' },
+  { value: 'FABRICATION_ELECTRONIQUE', label: 'Fabrication Electronique' },
+  { value: 'CONCEPTION', label: 'Conception' },
 ];
 
 export default function TaskSelect({ onSelect, value }) {

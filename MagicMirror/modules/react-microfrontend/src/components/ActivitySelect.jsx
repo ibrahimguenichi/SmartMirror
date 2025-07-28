@@ -2,9 +2,9 @@ import { VStack, Text, useRadioGroup, SimpleGrid } from '@chakra-ui/react';
 import RadioCard from './RadioCard';
 
 const options = [
-  { value: 'OpenLab', label: 'OpenLab' },
-  { value: 'Workshop', label: 'Atelier' },
-  { value: 'Accompagnement', label: 'Accompagnement' },
+  { value: 'OPEN_LAB', label: 'OpenLab' },
+  { value: 'WORKSHOP', label: 'Workshop' },
+  { value: 'ACCOPAGNEMENT', label: 'Accompagnement' },
 ];
 
 export default function ActivitySelect({ onSelect, value }) {

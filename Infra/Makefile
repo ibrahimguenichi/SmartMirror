@@ -52,10 +52,13 @@ mailpit-up:
 	$(START_MAILPIT_SCRIPT)
 
 run-ai:
-	cd /mnt/e/PFE-Dhia/AI_backend && . myenv/bin/activate && uvicorn main:app --host 0.0.0.0 --port 8000
+	cd /mnt/c/users/dhia/onedrive/bureau/SmartMirror/AI_backend && . myenv/bin/activate && uvicorn main:app --host 0.0.0.0 --port 8000
 
 run-back:
-	cd /mnt/e/PFE-Dhia/SmartMirror && mvn spring-boot:run
+	cd /mnt/c/users/dhia/onedrive/bureau/SmartMirror/SmartMirror && mvn spring-boot:run
 
-run-tunnel:
-	ngrok http --url=assuring-stirring-pug.ngrok-free.app 9090
+run-tunnel_front:
+	ngrok http --url=dinosaur-pet-ladybird.ngrok-free.app 8080
+	cd /mnt/c/users/dhia/onedrive/bureau/SmartMirror
+run-tunnel-back:
+	ngrok http --url=minnow-blessed-usually.ngrok-free.app 9090

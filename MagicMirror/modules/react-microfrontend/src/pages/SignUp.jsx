@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import orangeLogo from '@/assets/orange_logo.svg';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { AppContext } from '../context/AppContext';
 
 const SignUp = () => {
   // Form stage state
@@ -13,7 +12,6 @@ const SignUp = () => {
   // Form state
   const [userType, setUserType] = useState('client');
   const [isLoading, setIsLoading] = useState(false);
-  // const { backendURL } = useContext(AppContext);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
@@ -79,7 +77,7 @@ const SignUp = () => {
           "confirmPassword": formData.confirmPassword,
           "role": formData.role,
         }
-        response = await axios.post(`https://assuring-stirring-pug.ngrok-free.app/api/users/client`, client_data);
+        response = await axios.post(`https://minnow-blessed-usually.ngrok-free.app/api/users/client`, client_data);
       } else if(userType === 'employee') {
         const employee_data = {
           "email": formData.email,
@@ -95,7 +93,7 @@ const SignUp = () => {
           "department": formData.department,
           "startDate": formData.startDate
         }
-        response = await axios.post(`https://assuring-stirring-pug.ngrok-free.app/api/users/employee`, employee_data);
+        response = await axios.post(`https://minnow-blessed-usually.ngrok-free.app/api/users/employee`, employee_data);
       }
       if (response && response.status === 200) {
         const userId = response.data.id;
@@ -105,7 +103,7 @@ const SignUp = () => {
           const formDataImg = new FormData();
           formDataImg.append('file', profileImage);
           try {
-            const uploadRes = await axios.post(`https://assuring-stirring-pug.ngrok-free.app/api/users/${userId}/profile-image`, formDataImg, {
+            const uploadRes = await axios.post(`https://minnow-blessed-usually.ngrok-free.app/api/users/${userId}/profile-image`, formDataImg, {
               headers: { 'Content-Type': 'multipart/form-data' },
             });
             if (uploadRes.status === 200) {
@@ -228,7 +226,7 @@ const SignUp = () => {
         formData.append('userId', createdUserId);
 
         axios.defaults.withCredentials = true;
-        const response = await axios.post(`https://assuring-stirring-pug.ngrok-free.app/api/face-recognition/upload_face`, formData, {
+        const response = await axios.post(`https://minnow-blessed-usually.ngrok-free.app/api/face-recognition/upload_face`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
