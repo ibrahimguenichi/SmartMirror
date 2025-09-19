@@ -1,7 +1,39 @@
 name: smartmirror
 
 services:
-  db:
+  backend:
+    build:
+      context: ../SmartMirror
+      dockerfile: Dockerfile
+    image: smartmirror-backend
+    container_name: backend
+    restart: always
+    ports:
+      - "${SPRING_APP_PORT}:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:${DB_PORT}/${DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      - postgres
+    networks:
+      - smartmirror_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      retries: 5
+  ai:
+    build:
+      context: ../AI_backend
+      dockerfile: Dockerfile
+    image: smartmirror-ai
+    container_name: AI_backend
+    restart: always
+    ports:
+      - "${FASTAPI_PORT:-8000}:8000"
+    networks:
+      - smartmirror_network
+  postgres:
     build:
       context: .
       dockerfile: Dockerfile.pgvector
@@ -16,6 +48,18 @@ services:
       - pgdata:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     restart: unless-stopped
+    networks:
+      - smartmirror_network
+  ngrok:
+    build:
+      context: ./ngrok
+    container_name: smartmirror-ngrok
+    networks:
+      - smartmirror_network
 
 volumes:
   pgdata:
+
+networks:
+  smartmirror_network:
+    driver: bridge

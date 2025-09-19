@@ -1,64 +1,123 @@
-# Path to your start-db script
-START_DB_SCRIPT := ./start-database.sh
+# =========================
+# Makefile for SmartMirror Dev
+# =========================
 
-# Path to your start-mailpit script
-START_MAILPIT_SCRIPT := ./start_mailpit.sh
+# Load environment variables from .env
+include .env
+export
 
-# Name of the Docker container
-DB_CONTAINER := SmartMirror-db
+DOCKER_COMPOSE=docker compose -f docker-compose.yml
 
-# Default env file
-ENV_FILE := .env.dev
+# -------------------------
+# Help
+# -------------------------
+.PHONY: help
+help:
+	@echo "Usage:"
+	@echo "  make build             # Build all Docker images"
+	@echo "  make up                # Start all containers (Backend, AI, Postgres)"
+	@echo "  make down              # Stop all containers"
+	@echo "  make restart           # Restart all containers"
+	@echo "  make logs              # Show logs of all containers"
+	@echo "  make logs-backend      # Show logs of the Spring Boot backend"
+	@echo "  make logs-ai           # Show logs of the FastAPI AI service"
+	@echo "  make logs-postgres     # Show logs of Postgres"
+	@echo "  make up-backend        # Start only the Spring Boot backend"
+	@echo "  make up-ai             # Start only the FastAPI AI service"
+	@echo "  make up-postgres       # Start only the Postgres database"
+	@echo "  make urls              # Show available dev interfaces"
+	@echo "  make db-shell          # Connect to Postgres dev database"
 
-PORT ?= 8080
-SUBDOMAIN ?= smartMirror-dev
+# -------------------------
+# Build all Docker images
+# -------------------------
+.PHONY: build
+build:
+	@echo "🔧 Building Docker images..."
+	$(DOCKER_COMPOSE) build
 
-# Targets
-.PHONY: db-up db-down db-logs db-status db-restart db-shell mailpit-up
+# -------------------------
+# Start all containers
+# -------------------------
+.PHONY: up
+up:
+	@echo "🚀 Starting SmartMirror stack..."
+	$(DOCKER_COMPOSE) up -d
+	@$(MAKE) urls
 
-## Start the local PostgreSQL database container
-db-up:
-	@echo "🟢 Starting local database container..."
-	$(START_DB_SCRIPT)
+# -------------------------
+# Stop all containers
+# -------------------------
+.PHONY: down
+down:
+	@echo "🛑 Stopping SmartMirror stack..."
+	$(DOCKER_COMPOSE) down
 
-## Stop and remove the database container
-db-down:
-	@echo "🔴 Stopping and removing database container..."
-	-docker stop $(DB_CONTAINER)
-	-docker rm $(DB_CONTAINER)
+# -------------------------
+# Restart all containers
+# -------------------------
+.PHONY: restart
+restart: down up
 
-## Show logs from the database container
-db-logs:
-	@echo "📜 Showing logs from $(DB_CONTAINER)..."
-	docker logs -f $(DB_CONTAINER)
+# -------------------------
+# Logs
+# -------------------------
+.PHONY: logs
+logs:
+	@echo "📄 Showing logs for all services..."
+	$(DOCKER_COMPOSE) logs -f
 
-## Check the status of the database container
-db-status:
-	@docker ps -a --filter "name=$(DB_CONTAINER)"
+.PHONY: logs-backend
+logs-backend:
+	@echo "📄 Showing logs for Spring Boot backend..."
+	$(DOCKER_COMPOSE) logs -f backend
 
-## Restart the database container
-db-restart:
-	@echo "🔄 Restarting database container..."
-	-docker restart $(DB_CONTAINER)
+.PHONY: logs-ai
+logs-ai:
+	@echo "📄 Showing logs for FastAPI AI service..."
+	$(DOCKER_COMPOSE) logs -f ai
 
-## Open an interactive psql shell
+.PHONY: logs-postgres
+logs-postgres:
+	@echo "📄 Showing logs for Postgres..."
+	$(DOCKER_COMPOSE) logs -f postgres
+
+# -------------------------
+# Start individual services
+# -------------------------
+.PHONY: up-backend
+up-backend:
+	@echo "🚀 Starting Spring Boot backend..."
+	$(DOCKER_COMPOSE) up -d backend
+	@$(MAKE) urls
+
+.PHONY: up-ai
+up-ai:
+	@echo "🚀 Starting FastAPI AI service..."
+	$(DOCKER_COMPOSE) up -d ai
+	@$(MAKE) urls
+
+.PHONY: up-postgres
+up-postgres:
+	@echo "🚀 Starting Postgres..."
+	$(DOCKER_COMPOSE) up -d postgres
+
+# -------------------------
+# Show available interfaces
+# -------------------------
+.PHONY: urls
+urls:
+	@echo ""
+	@echo "🌐 Available development interfaces:"
+	@echo "  - Spring Boot Backend: http://localhost:${SPRING_APP_PORT}"
+	@echo "  - FastAPI AI Service:  http://localhost:${FASTAPI_PORT}"
+	@echo "  - Postgres DB:         localhost:${DB_PORT} (db=${DB_NAME}, user=${DB_USER})"
+	@echo ""
+
+# -------------------------
+# Connect to Postgres DB
+# -------------------------
+.PHONY: db-shell
 db-shell:
-	@echo "🧪 Connecting to Postgres shell..."
-	docker exec -it $(DB_CONTAINER) psql -U $$(grep DB_USER $(ENV_FILE) | cut -d '=' -f2) -d $$(grep DB_NAME $(ENV_FILE) | cut -d '=' -f2)
-
-## Start the local Mailpit container
-mailpit-up:
-	@echo "📧 Starting Mailpit container..."
-	$(START_MAILPIT_SCRIPT)
-
-run-ai:
-	cd /mnt/c/users/dhia/onedrive/bureau/SmartMirror/AI_backend && . myenv/bin/activate && uvicorn main:app --host 0.0.0.0 --port 8000
-
-run-back:
-	cd /mnt/c/users/dhia/onedrive/bureau/SmartMirror/SmartMirror && mvn spring-boot:run
-
-run-tunnel_front:
-	ngrok http --url=dinosaur-pet-ladybird.ngrok-free.app 8080
-	cd /mnt/c/users/dhia/onedrive/bureau/SmartMirror
-run-tunnel-back:
-	ngrok http --url=minnow-blessed-usually.ngrok-free.app 9090
+	@echo "🐘 Connecting to Postgres database..."
+	$(DOCKER_COMPOSE) exec postgres psql -U $$DB_USER -d $$DB_NAME
