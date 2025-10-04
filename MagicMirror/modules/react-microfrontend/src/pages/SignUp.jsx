@@ -77,7 +77,9 @@ const SignUp = () => {
           "confirmPassword": formData.confirmPassword,
           "role": formData.role,
         }
+        console.log("ssss")
         response = await axios.post(`https://minnow-blessed-usually.ngrok-free.app/api/users/client`, client_data);
+        console.log(response)
       } else if(userType === 'employee') {
         const employee_data = {
           "email": formData.email,
@@ -226,12 +228,13 @@ const SignUp = () => {
         formData.append('userId', createdUserId);
 
         axios.defaults.withCredentials = true;
+        console.log('aaaa')
         const response = await axios.post(`https://minnow-blessed-usually.ngrok-free.app/api/face-recognition/upload_face`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
         });
-
+        console.log('bbbb')
         if (response.status === 200) {
           console.log('Face embedding response:', response.data);
           toast.success('Face registered successfully!');

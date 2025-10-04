@@ -60,7 +60,7 @@ function Server(config) {
       });
 
       Log.log(`Starting server on port ${port} ... `);
-      server.listen(port, config.address || "localhost");
+      server.listen(port, config.address || "0.0.0.0");
 
       if (config.ipWhitelist instanceof Array && config.ipWhitelist.length === 0) {
         Log.warn("You're using a full whitelist configuration to allow for all IPs");

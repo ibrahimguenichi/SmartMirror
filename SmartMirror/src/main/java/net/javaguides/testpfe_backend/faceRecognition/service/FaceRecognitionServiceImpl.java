@@ -33,7 +33,7 @@ public class FaceRecognitionServiceImpl implements IFaceRecognitionService {
     private final UserRepository userRepository;
     private final RestTemplate restTemplate = new RestTemplate();
 
-    @Value("${face.api.url:http://localhost:8000/api/face-recognition/extract-embedding/}")
+    @Value("${face.api.url:http://ai:8000/api/face-recognition/extract-embedding/}")
     private String faceApiUrl;
 
     @Override
@@ -153,7 +153,7 @@ public class FaceRecognitionServiceImpl implements IFaceRecognitionService {
 
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
-        String fastApiUrl = "http://localhost:8000/api/face-recognition/embedding-without-user/";
+        String fastApiUrl = "http://ai:8000/api/face-recognition/embedding-without-user/";
         ResponseEntity<Map> response = restTemplate.exchange(
                 fastApiUrl,
                 HttpMethod.POST,

@@ -15,6 +15,8 @@ import java.time.Duration;
 
 @Data
 public class CreateReservationDTO {
+    @NotNull
+    private Long clientId;
 
     @NotNull
     private Activity activity;

@@ -1,89 +1,140 @@
-import React from 'react';
+import { useState, useContext } from 'react';
 import {
   Box,
-  Heading,
-  Text,
   SimpleGrid,
   Card,
   CardBody,
-  Badge,
   Stack,
-  useColorModeValue,
+  Heading,
+  Text,
+  Badge,
+  Button,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
+import axios from 'axios';
+import { AppContext } from '../context/AppContext';
 
-// Animate card using framer-motion
 const MotionCard = motion(Card);
 
-// Status color mapping
-const getStatusColor = (status) => {
-  switch (status) {
-    case 'COMPLETED':
-      return 'green';
-    case 'CANCELED':
-      return 'red';
-    case 'NOT_COMPLETED':
-    default:
-      return 'orange';
-  }
-};
+// --- Confirmation Modal as a child component ---
+function ConfirmCancelModal({ isOpen, onClose, reservationId, onSuccess }) {
+  const { backendURL } = useContext(AppContext);
 
-// Single reservation card
-const ReservationCard = ({ reservation }) => {
+  const handleConfirm = async () => {
+    try {
+      axios.defaults.withCredentials = true;
+      const response = await axios.delete(`${backendURL}/reservation/${reservationId}`);
+      if (response.status === 200 || response.status === 204) {
+        onSuccess(reservationId);   // tell parent to remove the item
+        onClose();
+      }
+    } catch (err) {
+      console.error('Failed to cancel reservation:', err);
+    }
+  };
+
   return (
-    <MotionCard
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.97 }}
-      borderRadius="xl"
-      boxShadow="lg"
-      bg={useColorModeValue('whiteAlpha.200', 'gray.700')}
-      p={5}
-      minH="200px"
-      cursor="pointer"
-    >
-      <CardBody>
-        <Stack spacing={3}>
-          <Heading size="md" textTransform="capitalize">
-            {reservation.activity.replace(/_/g, ' ').toLowerCase()}
-          </Heading>
-          <Text fontSize="lg">Task: {reservation.task.replace(/_/g, ' ')}</Text>
-          <Text fontSize="lg">Age Group: {reservation.ageClass}</Text>
-          <Text fontSize="lg">Date: {reservation.date}</Text>
-          <Text fontSize="lg">Time: {reservation.startTime}</Text>
-          <Text fontSize="lg">Duration: {formatDuration(reservation.duration)}</Text>
-          <Badge
-            colorScheme={getStatusColor(reservation.status)}
-            fontSize="1em"
-            px={3}
-            py={1}
-            borderRadius="md"
-            alignSelf="flex-start"
-          >
-            {reservation.status.replace(/_/g, ' ')}
-          </Badge>
-        </Stack>
-      </CardBody>
-    </MotionCard>
+    <Modal isOpen={isOpen} onClose={onClose} isCentered>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>Cancel Reservation</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          Are you sure you want to cancel this reservation?
+        </ModalBody>
+        <ModalFooter>
+          <Button colorScheme="red" mr={3} onClick={handleConfirm}>
+            Yes, Cancel
+          </Button>
+          <Button variant="ghost" onClick={onClose}>
+            No, Keep it
+          </Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
   );
-};
-
-// Format ISO-8601 duration (PT1H30M) to readable
-function formatDuration(duration) {
-  if (!duration) return '';
-  const hours = duration.match(/(\d+)H/);
-  const minutes = duration.match(/(\d+)M/);
-  return `${hours ? hours[1] + 'h ' : ''}${minutes ? minutes[1] + 'min' : ''}`.trim();
 }
 
-// Full reservation list
-export default function ReservationList({ reservations }) {
+export default function ReservationList({ reservations, setReservations }) {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [selectedId, setSelectedId] = useState(null);
+  const { backendURL } = useContext(AppContext);
+
+  // When user clicks the "Cancel" button on a card:
+  const handleCancelClick = (id) => {
+    setSelectedId(id);
+    onOpen(); // opens the modal
+  };
+
+  // Remove the reservation from local state after successful deletion
+  const removeReservation = async (id) => {
+    try {
+    // Send DELETE request
+    const response = await axios.delete(`${backendURL}/reservation/${id}`);
+
+    if (response.status === 200 || response.status === 204) {
+      // Remove from local state
+      setReservations((prev) => prev.filter((res) => res.id !== id));
+      console.log(`Reservation ${id} cancelled successfully.`);
+    } else {
+      console.error(`Failed to cancel reservation ${id}. Status: ${response.status}`);
+    }
+  } catch (err) {
+    console.error('Error cancelling reservation:', err);
+  }
+  };
+
   return (
     <Box p={6}>
       <SimpleGrid columns={[1, 1, 2, 3]} spacing={6}>
-        {reservations.map((reservation, idx) => (
-          <ReservationCard key={idx} reservation={reservation} />
+        {reservations.map((reservation) => (
+          <MotionCard
+            key={reservation.id}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.97 }}
+            borderRadius="xl"
+            boxShadow="lg"
+            p={5}
+            minH="200px"
+          >
+            <CardBody>
+              <Stack spacing={3}>
+                <Heading size="md">{reservation.activity}</Heading>
+                <Text>Task: {reservation.task}</Text>
+                <Text>Age Group: {reservation.ageGroup}</Text>
+                <Text>Date: {reservation.date}</Text>
+                <Text>Time: {reservation.startTime}</Text>
+                <Text>Duration: {reservation.duration}</Text>
+                <Badge>{reservation.status}</Badge>
+
+                <Button
+                  colorScheme="red"
+                  mt={2}
+                  onClick={() => handleCancelClick(reservation.id)}
+                >
+                  Cancel
+                </Button>
+              </Stack>
+            </CardBody>
+          </MotionCard>
         ))}
       </SimpleGrid>
+
+      {/* Confirmation Modal */}
+      <ConfirmCancelModal
+        isOpen={isOpen}
+        onClose={onClose}
+        reservationId={selectedId}
+        onSuccess={removeReservation}
+      />
     </Box>
   );
 }

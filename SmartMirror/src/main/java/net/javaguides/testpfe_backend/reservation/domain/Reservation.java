@@ -1,13 +1,14 @@
 package net.javaguides.testpfe_backend.reservation.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.javaguides.testpfe_backend.entity.AbstractEntity;
+import net.javaguides.testpfe_backend.reservation.dto.CreateReservationDTO;
+import net.javaguides.testpfe_backend.users.domain.Client;
+import net.javaguides.testpfe_backend.users.domain.User;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -28,4 +29,16 @@ public class Reservation extends AbstractEntity {
     private LocalDate date;
     private LocalTime startTime;
     private Duration duration;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user ;
+
+    public Reservation(CreateReservationDTO dto) {
+        this.activity = dto.getActivity();
+        this.ageGroup = dto.getAgeGroup();
+        this.task = dto.getTask();
+        this.date = dto.getDate();
+        this.startTime = dto.getStartTime();
+        this.duration = dto.getDuration();
+    }
 }

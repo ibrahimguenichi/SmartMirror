@@ -163,7 +163,8 @@ html, body {
   background-color: rgba(255, 255, 255, 0.95);
   color: black;
   border-radius: 12px 12px 12px 12px;
-  overflow: hidden;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   z-index: 99999;
 }

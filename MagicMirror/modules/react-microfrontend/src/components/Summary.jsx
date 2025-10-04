@@ -1,40 +1,23 @@
-import React, { useContext } from 'react';
-import { Box, Text, Stack } from '@chakra-ui/react';
-import { AppContext } from '../context/AppContext';
+import { VStack, Text, Box } from '@chakra-ui/react';
 
-const Summary = () => {
-  const { formData } = useContext(AppContext);
-
-  const type = formData?.type || '- -';
-  const userType = formData?.userType || '- -';
-  const task = formData?.task || '- -';
-  const date = formData?.date || '- -';
-  const time = formData?.time || '- -';
-
+export default function Summary({ data }) {
   return (
-    <Box p={4} borderWidth='1px' borderRadius='lg'>
-      <Text fontSize='xl' mb={4}>
-        Summary
+    <VStack align='start' spacing={2}>
+      <Text fontSize='lg'>
+        <strong>Activity:</strong> {data.activity || '- -'}
       </Text>
-      <Stack spacing={2}>
-        <Text>
-          <strong>Activity:</strong> {type}
-        </Text>
-        <Text>
-          <strong>For:</strong> {userType}
-        </Text>
-        <Text>
-          <strong>Task:</strong> {task}
-        </Text>
-        <Text>
-          <strong>Date:</strong> {date}
-        </Text>
-        <Text>
-          <strong>Time:</strong> {time}
-        </Text>
-      </Stack>
-    </Box>
+      <Text fontSize='lg'>
+        <strong>For:</strong> {data.ageGroup || '- -'}
+      </Text>
+      <Text fontSize='lg'>
+        <strong>Task:</strong> {data.task || '- -'}
+      </Text>
+      <Text fontSize='lg'>
+        <strong>Date:</strong> {data.date || '- -'}
+      </Text>
+      <Text fontSize='lg'>
+        <strong>Time:</strong> {data.startTime || '- -'}
+      </Text>
+    </VStack>
   );
-};
-
-export default Summary;
+}

@@ -15,7 +15,7 @@ import {
 import { FaUser, FaBuilding, FaPlusCircle, FaRobot } from 'react-icons/fa';
 
 const Home = () => {
-  const { userData, setIsLoggedIn, setUserData, isLoggedIn } =
+  const { userData, isLoggedIn } =
     useContext(AppContext);
   const navigate = useNavigate();
   const bg = useColorModeValue('white', 'gray.800');

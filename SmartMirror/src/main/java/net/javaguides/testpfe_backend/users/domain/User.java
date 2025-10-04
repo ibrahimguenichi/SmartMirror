@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.javaguides.testpfe_backend.faceRecognition.domain.FaceData;
+import net.javaguides.testpfe_backend.reservation.domain.Reservation;
 import net.javaguides.testpfe_backend.util.ApplicationContextProvider;
 import net.javaguides.testpfe_backend.entity.AbstractEntity;
 import net.javaguides.testpfe_backend.users.dto.CreateUserDTO;
@@ -39,6 +40,9 @@ public class User extends AbstractEntity implements UserDetails {
     private String trainingLocation;
     private String profileImageUrl;
     private String password;
+
+    @OneToMany(mappedBy = ("user"))
+    private List<Reservation>reservations;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private List<UserConnectedAccount> connectedAccounts = new ArrayList<>();

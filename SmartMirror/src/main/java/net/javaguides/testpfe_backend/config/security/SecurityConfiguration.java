@@ -73,6 +73,9 @@ public class SecurityConfiguration {
                     .requestMatchers(antMatcher(HttpMethod.POST, "/api/auth/face_login")).permitAll()
                     .requestMatchers(antMatcher(HttpMethod.POST, "/api/users/*/profile-image")).permitAll()
                     .requestMatchers(antMatcher(HttpMethod.POST, "/api/reservation")).permitAll()
+                    .requestMatchers(antMatcher(HttpMethod.GET, "/api/reservation")).permitAll()
+                    .requestMatchers(antMatcher(HttpMethod.DELETE, "/api/reservation/**")).permitAll()
+                    .requestMatchers("/api/reservation/my").authenticated()
                     .anyRequest().authenticated();
         });
 
@@ -113,16 +116,13 @@ public class SecurityConfiguration {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        return new CorsConfigurationSource() {
-            @Override
-            public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
-                CorsConfiguration config = new CorsConfiguration();
-                config.setAllowedOrigins(applicationProperties.getAllowedOrigins());
-                config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-                config.setAllowedHeaders(List.of("*"));
-                config.setAllowCredentials(true);
-                return config;
-            }
+        return request -> {
+            CorsConfiguration config = new CorsConfiguration();
+            config.setAllowedOriginPatterns(applicationProperties.getAllowedOrigins());
+            config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+            config.setAllowedHeaders(List.of("*"));
+            config.setAllowCredentials(true);
+            return config;
         };
     }
 

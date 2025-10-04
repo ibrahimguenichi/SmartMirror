@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import {
   Box,
   Button,
@@ -20,56 +20,56 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
-import { useContext } from 'react';
 
 export default function Task() {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     activity: '',
-    ageClass: '',
+    ageGroup: '',   // ✅ Corrected
     task: '',
     date: '',
     startTime: '',
-    duration: 'PT1H'
+    duration: 'PT1H',
   });
-  const { backendURL } = useContext(AppContext);
 
+  const { backendURL, userData } = useContext(AppContext);
   const navigate = useNavigate();
 
   const isFormComplete = Object.values(formData).every((value) => value !== '');
 
   const handleSelect = (field, value) => {
-    console.log(`Setting ${field} to`, value); // <- ADD THIS
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleRestart = () => {
     setFormData({
       activity: '',
-      ageClass: '',
+      ageGroup: '',   // ✅ Reset correctly
       task: '',
       date: '',
       startTime: '',
-      duration: 'PT1H'
+      duration: 'PT1H',
     });
   };
 
   const handleConfirm = async (e) => {
-    // console.log('This is the data you picked:', formData);
     e.preventDefault();
     setIsLoading(true);
     try {
-      axios.defaults.withCredentials = true;
-      const response = await axios.post(`${backendURL}/reservation`, formData);
-      if(response && response.status === 200) {
-        toast.success("Reservation added successfully");
-        setIsLoading(false);
-        navigate("/home");
-      } else {
-        response.data.errors.map((error) => {toast.error(error)});
+      console.log("Sending reservation:", {...formData, clienId: userData.id});
+      const response = await axios.post(`${backendURL}/reservation`, {...formData, clientId: userData.id}, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (response && response.status === 200) {
+        toast.success('Reservation added successfully');
+        navigate('/');
+      } else if (response.data.errors) {
+        response.data.errors.forEach((error) => toast.error(error));
       }
-    } catch(err) {
-      console.error("Reservation failed", err);
+    } catch (err) {
+      console.error('Reservation failed', err);
+      toast.error('Reservation failed');
     } finally {
       setIsLoading(false);
     }
@@ -77,25 +77,18 @@ export default function Task() {
 
   return (
     <Layout maxW='80%'>
-      <Card
-        mx='auto'
-        mt={6}
-        mb={6}
-        boxShadow='lg'
-        borderRadius='xl'
-        width='100%'
-      >
+      <Card mx='auto' mt={6} mb={6} boxShadow='lg' borderRadius='xl' width='100%'>
         <CardBody p={8}>
           <Flex direction='row' gap={8}>
             {/* Left Side: Form Steps */}
             <Stack spacing={6} flex='2'>
               <ActivitySelect
-                value={formData.type}
+                value={formData.activity}
                 onSelect={(val) => handleSelect('activity', val)}
               />
 
               <AudienceSelect
-                value={formData.ageGroup}
+                value={formData.ageGroup}   // ✅ Corrected
                 onSelect={(val) => handleSelect('ageGroup', val)}
               />
 
@@ -118,8 +111,9 @@ export default function Task() {
                 />
 
                 <TimeSelect
-                  value={formData.time}
+                  value={formData.startTime}      // ✅ Corrected
                   onSelect={(val) => handleSelect('startTime', val)}
+                  date={formData.date}            // ✅ Pass date to fetch available times
                 />
               </Flex>
             </Stack>
@@ -133,7 +127,7 @@ export default function Task() {
                 </Button>
                 <Button
                   colorScheme='orange'
-                  // isDisabled={!isFormComplete}
+                  isDisabled={!isFormComplete}
                   onClick={handleConfirm}
                   isLoading={isLoading}
                 >

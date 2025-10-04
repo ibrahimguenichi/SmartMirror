@@ -33,6 +33,8 @@ services:
       - "${FASTAPI_PORT:-8000}:8000"
     networks:
       - smartmirror_network
+    volumes:
+      - insightface_models:/root/.insightface
   postgres:
     build:
       context: .
@@ -50,15 +52,28 @@ services:
     restart: unless-stopped
     networks:
       - smartmirror_network
-  ngrok:
-    build:
-      context: ./ngrok
-    container_name: smartmirror-ngrok
+  ngrok_backend:
+    image: ngrok/ngrok:latest
+    container_name: smartmirror-ngrok-back
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN_BACK}
+    command: http --url=${URL_BACKEND} backend:8080
+    depends_on:
+      - backend
+    networks:
+      - smartmirror_network
+  ngrok_frontend:
+    image: ngrok/ngrok:latest
+    container_name: smartmirror-ngrok-front
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN_FRONT}
+    command: http --url=${URL_FRONTEND} host.docker.internal:5173
     networks:
       - smartmirror_network
 
 volumes:
   pgdata:
+  insightface_models:
 
 networks:
   smartmirror_network:
