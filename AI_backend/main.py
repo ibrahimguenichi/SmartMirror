@@ -1,47 +1,25 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
-from app.face_detector import FaceDetector
-from app.api_client import send_embedding, send_embedding_without_user
-from app.utils import normalize_embedding
-import tempfile
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from app.api.routes_face import router as face_router
+from app.api.routes_health import router as health_router
+from app.api.routes_llm import router as llm_router
 
-app = FastAPI()
+app = FastAPI(title="Smart Mirror AI Backend", version="1.0")
 
-detector = FaceDetector()
+# CORS setup (if frontend connects directly)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.post("/api/face-recognition/extract-embedding/")
-async def extract_embedding(userId: int, file: UploadFile = File(...)):
-    try:
-        contents = await file.read()
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp:
-            tmp.write(contents)
-            tmp_path = tmp.name
+# Routers
+app.include_router(face_router, prefix="/api/face-recognition", tags=["Face Recognition"])
+app.include_router(health_router, prefix="/api", tags=["Health"])
+app.include_router(llm_router, prefix="/llm", tags=["LLM"])
 
-        # Get embedding
-        embedding = detector.get_embedding(tmp_path)
-        print(f"Embedding extracted: {embedding[:5]}...")
-
-        # Send to Spring Boot backend
-        response = send_embedding(userId, embedding.tolist(), "http://backend:8080/api/face-recognition/save_embedding")
-        print(f"Response from Spring Boot: {response}")
-
-        # return {"status": "success", "embeddings": embedding.tolist(), "backend_response": response}
-        return {"status": "success", "embedding": embedding.tolist()}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
-@app.post("/api/face-recognition/embedding-without-user/")
-async def preview_embedding(file: UploadFile = File(...)):
-    try:
-        contents = await file.read()
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp:
-            tmp.write(contents)
-            tmp_path = tmp.name
-
-        # Get embedding and normalize
-        embedding = detector.get_embedding(tmp_path)
-        print(f"Preview embedding: {embedding[:5]}...")
-
-        return {"status": "success", "embedding": embedding.tolist()}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
+@app.get("/")
+async def root():
+    return {"message": "Smart Mirror AI Backend is running 🚀"}

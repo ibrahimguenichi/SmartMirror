@@ -7,3 +7,10 @@ uvicorn
 python-multipart
 onnxruntime
 onnxruntime-gpu
+httpx
+pylint
+flake8
+pyright
+mypy
+black
+pylance
