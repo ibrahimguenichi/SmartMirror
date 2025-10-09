@@ -40,7 +40,7 @@ public class AuthController {
             HttpServletResponse response,
             @Valid @RequestBody LoginRequest body
     ) {
-        authService.login(request, response, body);
+
         final UserDetails userDetails = userDetailsService.loadUserByUsername(body.getEmail());
         final String jwtToken = jwtUtil.generateToken(userDetails);
         ResponseCookie cookie = ResponseCookie.from("jwt", jwtToken)
@@ -49,10 +49,12 @@ public class AuthController {
                 .maxAge(Duration.ofDays(1))
                 .sameSite("Lax")
                 .build();
+        User user = (User) userDetails;
+
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(new AuthResponse(body.getEmail(), jwtToken));
+                .body(new AuthResponse(body.getEmail(), jwtToken, user.getUserRole()));
     }
 
     @PostMapping(
@@ -85,7 +87,7 @@ public class AuthController {
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                    .body(new AuthResponse(user.getEmail(), jwtToken));
+                    .body(new AuthResponse(user.getEmail(), jwtToken, user.getUserRole()));
 
         } catch (Exception e) {
             Map<String, String> errorBody = new HashMap<>();

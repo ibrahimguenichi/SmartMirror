@@ -16,7 +16,7 @@ import net.javaguides.testpfe_backend.users.dto.CreateUserDTO;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Client extends User {
-    private ClientRole role;
+    private ClientRole clientType;
 
     public Client(CreateClientDTO dto) {
         super(new CreateUserDTO(
@@ -29,9 +29,10 @@ public class Client extends User {
                 dto.getTrainingLocation(),
                 dto.getPassword(),
                 dto.getConfirmPassword(),
-                dto.getImageUrl()
+                dto.getImageUrl(),
+                UserRole.USER
         ));
 
-        this.role = dto.getRole();
+        this.clientType = dto.getRole();
     }
 }

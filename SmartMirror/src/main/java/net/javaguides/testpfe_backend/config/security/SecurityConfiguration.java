@@ -57,6 +57,7 @@ public class SecurityConfiguration {
                             "/swagger-resources/**",
                             "/swagger-ui.html",
                             "/webjars/**").permitAll()
+                    .requestMatchers(antMatcher(HttpMethod.GET, "/api/users/**")).hasRole("ADMIN")
                     .requestMatchers(antMatcher(HttpMethod.POST, "/api/users")).permitAll()
                     .requestMatchers(antMatcher(HttpMethod.POST, "/api/users/client")).permitAll()
                     .requestMatchers(antMatcher(HttpMethod.POST, "/api/users/employee")).permitAll()
@@ -76,6 +77,7 @@ public class SecurityConfiguration {
                     .requestMatchers(antMatcher(HttpMethod.GET, "/api/reservation")).permitAll()
                     .requestMatchers(antMatcher(HttpMethod.DELETE, "/api/reservation/**")).permitAll()
                     .requestMatchers("/api/reservation/my").authenticated()
+
                     .anyRequest().authenticated();
         });
 

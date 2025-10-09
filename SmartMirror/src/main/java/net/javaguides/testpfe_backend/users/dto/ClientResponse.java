@@ -12,16 +12,11 @@ import java.util.Collection;
 @NoArgsConstructor
 public class ClientResponse extends UserResponse{
     private ClientRole role;
-
     public ClientResponse(Client client) {
-        super(client);
-
-        this.role = client.getRole();
+        super(client); // initialise les champs hérités de UserResponse
+        this.role = client.getClientType(); // initialise le rôle spécifique au Client
     }
 
-    public ClientResponse(Client client, Collection<? extends GrantedAuthority> authorities) {
-        super(client, authorities);
-
-        this.role = client.getRole();
     }
-}
+
+

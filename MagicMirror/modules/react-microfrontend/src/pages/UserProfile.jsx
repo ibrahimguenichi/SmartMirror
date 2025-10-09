@@ -34,7 +34,8 @@ export default function UserProfile() {
         <Avatar
           size="2xl"
           name={`${user.firstName} ${user.lastName}`}
-          src={user.profileImageUrl || undefined}
+          // Ici on affiche l'image depuis Spring Boot
+          src={user.profileImageUrl ? `http://localhost:8080${user.profileImageUrl}` : undefined}
           mb={6}
         />
         <VStack spacing={4}>

@@ -40,6 +40,9 @@ public class User extends AbstractEntity implements UserDetails {
     private String trainingLocation;
     private String profileImageUrl;
     private String password;
+    @Enumerated(EnumType.STRING)
+    private UserRole userRole = UserRole.USER ;
+
 
     @OneToMany(mappedBy = ("user"))
     private List<Reservation>reservations;
@@ -62,6 +65,7 @@ public class User extends AbstractEntity implements UserDetails {
         this.sexe = createUserDTO.getSexe();
         this.trainingLocation = createUserDTO.getTrainingLocation();
         this.profileImageUrl = createUserDTO.getImageUrl();
+        this.userRole = createUserDTO.getUserRole() != null ? createUserDTO.getUserRole() : UserRole.USER;
     }
 
     public User(OAuth2User oauth2User) {
@@ -85,10 +89,8 @@ public class User extends AbstractEntity implements UserDetails {
         connectedAccounts.add(userConnectedAccount);
     }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"));
-    }
+
+
 
     @Override
     public String getUsername() {
@@ -108,5 +110,9 @@ public class User extends AbstractEntity implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + userRole.name()));
     }
 }
