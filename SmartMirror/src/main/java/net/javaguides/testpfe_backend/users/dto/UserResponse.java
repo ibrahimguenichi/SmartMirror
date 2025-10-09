@@ -38,6 +38,7 @@ public class UserResponse {
         this.sexe = user.getSexe();
         this.trainingLocation = user.getTrainingLocation();
         this.profileImageUrl = user.getProfileImageUrl();
+
         user.getConnectedAccounts().forEach((provider) -> {
             this.connectedAccounts.add(new ConnectedAccountResponse(provider.getProvider(), provider.getConnectedAt()));
         });
