@@ -1,12 +1,10 @@
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState } from 'react';
 import { VStack, Text, useRadioGroup, SimpleGrid } from '@chakra-ui/react';
 import RadioCard from './RadioCard';
-import axios from 'axios';
-import { AppContext } from '../context/AppContext';
+import axiosInstance from '../api/axiosInstance';
 
 export default function TimeSelect({ onSelect, value, date, refreshFlag }) {
   const [options, setOptions] = useState([]);
-  const { backendURL } = useContext(AppContext);
 
   useEffect(() => {
     if (!date) {
@@ -14,11 +12,11 @@ export default function TimeSelect({ onSelect, value, date, refreshFlag }) {
       return;
     }
 
-    axios
-      .get(`${backendURL}/reservation/available-times?date=${date}`)
+    axiosInstance
+      .get('/reservation/available-times', { params: { date } })
       .then((res) => setOptions(res.data))
       .catch((err) => console.error('Erreur récupération heures disponibles:', err));
-  }, [date, backendURL, refreshFlag]); // 🔥 refreshFlag déclenche la mise à jour
+  }, [date, refreshFlag]);
 
   const { getRootProps, getRadioProps } = useRadioGroup({
     name: 'time',

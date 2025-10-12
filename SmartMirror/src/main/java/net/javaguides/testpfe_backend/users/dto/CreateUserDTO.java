@@ -6,6 +6,7 @@ import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import net.javaguides.testpfe_backend.users.domain.UserRole;
 import net.javaguides.testpfe_backend.util.validators.PasswordMatch;
 import net.javaguides.testpfe_backend.util.validators.Unique;
 import net.javaguides.testpfe_backend.users.domain.Sexe;
@@ -43,4 +44,6 @@ public class CreateUserDTO {
     private String confirmPassword;
     @URL(message = "Must be a valid URL")
     private String imageUrl;
+    @Enumerated(EnumType.STRING)
+    private UserRole userRole;
 }

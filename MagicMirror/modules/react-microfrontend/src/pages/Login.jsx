@@ -1,53 +1,44 @@
-import { useContext, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import orangeLogo from '@/assets/orange_logo.svg';
-import axios from 'axios';
-import { AppContext } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 
 const Login = () => {
-  // const [isCreatedAccount, setIsCreatedAccount] = useState(false);
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [isLoading, setIsLoading] = useState(false);
-  const { backendURL, setIsLoggedIn, getUserData } = useContext(AppContext);
+  const { login, user, userRole } = useAuth();
   const navigate = useNavigate();
 
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (user) {
+      if (userRole === 'ADMIN') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
+    }
+  }, [user, userRole, navigate]);
+
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const onSubmitHundler = async (e) => {
-    const {email, password} = formData;
+  const onSubmitHandler = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    axios.defaults.withCredentials = true;
-    try {
 
-      const response = await axios.post(`${backendURL}/auth/login`, {email, password});
-      if (response.status === 200) {
-        // Set authentication state
-        // setUserData(response.data.user || { email });
-        setIsLoggedIn(true);
-        getUserData();
-        navigate("/");
-        toast.success("Login successfull.")
-      } else {
-        toast.error("Email/Password incorrect.");
-      }
-    } catch(err) {
-      console.error("Login failed:", err);
-      toast.error(err.response.data.message);
+    try {
+      await login(formData.email, formData.password);
+      toast.success('Login successful');
+      // The useEffect will handle the redirect based on user role
+    } catch (err) {
+      console.error('Login failed:', err);
+      toast.error(err?.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }
-
-    setTimeout(() => setIsLoading(false), 2000);
   };
 
   return (
@@ -63,8 +54,7 @@ const Login = () => {
         </div>
 
         {/* Login Form */}
-        <form className="mt-8 space-y-6" onSubmit={onSubmitHundler}>
-        {/* <form className="mt-8 space-y-6"> */}
+        <form className="mt-8 space-y-6" onSubmit={onSubmitHandler}>
           <div className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2 text-left">
@@ -82,7 +72,7 @@ const Login = () => {
                 placeholder="Enter your email"
               />
             </div>
-            
+
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2 text-left">
                 Password

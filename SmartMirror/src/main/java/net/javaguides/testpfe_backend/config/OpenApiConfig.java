@@ -14,7 +14,8 @@ public class OpenApiConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .servers(List.of(
-                        new Server().url("https://minnow-blessed-usually.ngrok-free.app")
+                        new Server().url("https://minnow-blessed-usually.ngrok-free.app"),
+                        new Server().url("http://localhost:8080")
                 ));
     }
 }

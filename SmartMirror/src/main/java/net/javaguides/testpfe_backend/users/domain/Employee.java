@@ -38,7 +38,9 @@ public class Employee extends User{
                 dto.getTrainingLocation(),
                 dto.getPassword(),
                 dto.getConfirmPassword(),
-                dto.getImageUrl()
+                dto.getImageUrl(),
+                UserRole.USER
+
         ));
 
         this.position = dto.getPosition();

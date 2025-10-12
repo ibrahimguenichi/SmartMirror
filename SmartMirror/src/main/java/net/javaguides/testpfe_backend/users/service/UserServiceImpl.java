@@ -1,5 +1,6 @@
 package net.javaguides.testpfe_backend.users.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import net.javaguides.testpfe_backend.users.domain.Client;
 import net.javaguides.testpfe_backend.users.domain.Employee;
@@ -14,9 +15,10 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -48,39 +50,53 @@ public class UserServiceImpl implements IUserService {
 
         return new EmployeeResponse(employee);
     }
+    @Override
+    public List<UserResponse> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(UserResponse::new)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public UserResponse getUserById(Long id) {
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
+        return new UserResponse(user);
+    }
 
     @Override
     public UserResponse uploadProfileImage(Long userId, MultipartFile file) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        // Get the root directory from environment variable
-        String parentDir = "/mnt/c/Users/Dhia/onedrive/bureau/smartmirror";
-        if (parentDir == null || parentDir.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Image_root_dir environment variable is not set");
-        }
+        // Chemin vers le dossier static
+        String parentDir = "src/main/resources/static/uploads";
+
         File directory = new File(parentDir);
         if (!directory.exists()) {
             directory.mkdirs();
         }
 
-        // Save the file with a unique name (e.g., userId + original extension)
         String originalFilename = file.getOriginalFilename();
         String extension = "";
         if (originalFilename != null && originalFilename.contains(".")) {
             extension = originalFilename.substring(originalFilename.lastIndexOf('.'));
         }
+
         String filename = "user_" + userId + extension;
         Path filePath = Paths.get(parentDir, filename);
+
         try {
             file.transferTo(filePath);
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to save profile image");
         }
 
-        // Update the user's profileImageUrl (store absolute path)
-        user.setProfileImageUrl(filePath.toAbsolutePath().toString());
+        // URL relative pour le front / Swagger
+        user.setProfileImageUrl("/uploads/" + filename);
         userRepository.save(user);
+
         return new UserResponse(user);
     }
 }

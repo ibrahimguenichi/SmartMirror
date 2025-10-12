@@ -23,6 +23,21 @@ export default defineConfig({
       'fb1a-41-228-68-88.ngrok-free.app', // Your specific ngrok host
     ],
     cors: true, // Enable CORS
+    watch: {
+      // Optimize file watching to reduce system load
+      usePolling: false,
+      ignored: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/.git/**',
+        '**/coverage/**',
+        '**/.nyc_output/**',
+        '**/logs/**',
+        '**/.cache/**',
+        '**/tmp/**',
+        '**/temp/**'
+      ]
+    }
   },
   build: {
     outDir: 'dist',

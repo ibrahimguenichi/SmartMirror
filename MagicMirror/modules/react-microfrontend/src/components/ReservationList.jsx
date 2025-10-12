@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState } from 'react';
 import {
   Box,
   SimpleGrid,
@@ -19,19 +19,15 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
-import axios from 'axios';
-import { AppContext } from '../context/AppContext';
+import axiosInstance from '../api/axiosInstance';
 
 const MotionCard = motion(Card);
 
 // --- Confirmation Modal as a child component ---
 function ConfirmCancelModal({ isOpen, onClose, reservationId, onSuccess }) {
-  const { backendURL } = useContext(AppContext);
-
   const handleConfirm = async () => {
     try {
-      axios.defaults.withCredentials = true;
-      const response = await axios.delete(`${backendURL}/reservation/${reservationId}`);
+      const response = await axiosInstance.delete(`/reservation/${reservationId}`);
       if (response.status === 200 || response.status === 204) {
         onSuccess(reservationId);   // tell parent to remove the item
         onClose();
@@ -66,7 +62,6 @@ function ConfirmCancelModal({ isOpen, onClose, reservationId, onSuccess }) {
 export default function ReservationList({ reservations, setReservations }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedId, setSelectedId] = useState(null);
-  const { backendURL } = useContext(AppContext);
 
   // When user clicks the "Cancel" button on a card:
   const handleCancelClick = (id) => {
@@ -75,21 +70,9 @@ export default function ReservationList({ reservations, setReservations }) {
   };
 
   // Remove the reservation from local state after successful deletion
-  const removeReservation = async (id) => {
-    try {
-    // Send DELETE request
-    const response = await axios.delete(`${backendURL}/reservation/${id}`);
-
-    if (response.status === 200 || response.status === 204) {
-      // Remove from local state
-      setReservations((prev) => prev.filter((res) => res.id !== id));
-      console.log(`Reservation ${id} cancelled successfully.`);
-    } else {
-      console.error(`Failed to cancel reservation ${id}. Status: ${response.status}`);
-    }
-  } catch (err) {
-    console.error('Error cancelling reservation:', err);
-  }
+  const removeReservation = (id) => {
+    setReservations((prev) => prev.filter((res) => res.id !== id));
+    console.log(`Reservation ${id} cancelled successfully.`);
   };
 
   return (

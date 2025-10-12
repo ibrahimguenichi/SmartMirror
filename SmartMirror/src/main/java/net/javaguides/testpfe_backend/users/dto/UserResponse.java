@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import net.javaguides.testpfe_backend.users.domain.Sexe;
 import net.javaguides.testpfe_backend.users.domain.User;
+import net.javaguides.testpfe_backend.users.domain.UserRole;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.time.LocalDateTime;
@@ -28,6 +29,7 @@ public class UserResponse {
     private String profileImageUrl;
     private List<ConnectedAccountResponse> connectedAccounts = new ArrayList<>();
     private List<String> authorities = new ArrayList<>();
+    private UserRole userRole;
 
     public UserResponse(User user) {
         this.id = user.getId();
@@ -38,6 +40,8 @@ public class UserResponse {
         this.sexe = user.getSexe();
         this.trainingLocation = user.getTrainingLocation();
         this.profileImageUrl = user.getProfileImageUrl();
+        this.userRole = user.getUserRole();
+
         user.getConnectedAccounts().forEach((provider) -> {
             this.connectedAccounts.add(new ConnectedAccountResponse(provider.getProvider(), provider.getConnectedAt()));
         });
