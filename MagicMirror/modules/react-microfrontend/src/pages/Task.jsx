@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState } from 'react';
 import {
   Box,
   Button,
@@ -16,23 +16,23 @@ import TaskSelect from '../components/TaskSelect';
 import DateSelect from '../components/DateSelect';
 import TimeSelect from '../components/TimeSelect';
 import Summary from '../components/Summary';
-import axios from 'axios';
+import axiosInstance from '../api/axiosInstance';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-import { AppContext } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function Task() {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     activity: '',
-    ageGroup: '',   // ✅ Corrected
+    ageGroup: '',
     task: '',
     date: '',
     startTime: '',
     duration: 'PT1H',
   });
+  const { user, userId, isAdmin } = useAuth();
 
-  const { backendURL, userData } = useContext(AppContext);
   const navigate = useNavigate();
 
   const isFormComplete = Object.values(formData).every((value) => value !== '');
@@ -44,7 +44,7 @@ export default function Task() {
   const handleRestart = () => {
     setFormData({
       activity: '',
-      ageGroup: '',   // ✅ Reset correctly
+      ageGroup: '',
       task: '',
       date: '',
       startTime: '',
@@ -52,12 +52,17 @@ export default function Task() {
     });
   };
 
+  console.log('Form Data:', formData);
+  console.log('User:', user);
+  console.log('UserId:', userId);
+  console.log('isAdmin:', isAdmin);
+
   const handleConfirm = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      console.log("Sending reservation:", {...formData, clienId: userData.id});
-      const response = await axios.post(`${backendURL}/reservation`, {...formData, clientId: userData.id}, {
+      // No need to send clientId, backend gets user from JWT
+      const response = await axiosInstance.post('/reservation', {...formData, clientId: userId}, {
         headers: { 'Content-Type': 'application/json' },
       });
 
@@ -88,7 +93,7 @@ export default function Task() {
               />
 
               <AudienceSelect
-                value={formData.ageGroup}   // ✅ Corrected
+                value={formData.ageGroup}
                 onSelect={(val) => handleSelect('ageGroup', val)}
               />
 
@@ -111,9 +116,9 @@ export default function Task() {
                 />
 
                 <TimeSelect
-                  value={formData.startTime}      // ✅ Corrected
+                  value={formData.startTime}
                   onSelect={(val) => handleSelect('startTime', val)}
-                  date={formData.date}            // ✅ Pass date to fetch available times
+                  date={formData.date}
                 />
               </Flex>
             </Stack>

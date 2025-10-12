@@ -5,14 +5,22 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 import { FaSignOutAlt } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import Header from '@/components/Header';
 
 export default function Layout({ children, maxW = 'container.lg' }) {
   const iconBg = useColorModeValue('gray.200', 'gray.700');
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
-  const handleExit = () => {
-    // Your exit/logout logic here
-    console.log('Exit clicked');
+  const handleExit = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
   };
 
   return (

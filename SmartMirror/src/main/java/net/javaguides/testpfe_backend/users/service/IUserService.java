@@ -12,4 +12,5 @@ public interface IUserService {
     EmployeeResponse createEmployee(CreateEmployeeDTO createEmployeeDTO);
     UserResponse uploadProfileImage(Long userId, MultipartFile file);
     List<UserResponse> getAllUsers();
+    UserResponse getUserById(Long id);
 }

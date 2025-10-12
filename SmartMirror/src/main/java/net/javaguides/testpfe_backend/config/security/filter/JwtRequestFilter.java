@@ -7,7 +7,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import net.javaguides.testpfe_backend.util.JwtUtil;
+import net.javaguides.testpfe_backend.users.domain.UserRole;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -20,58 +24,82 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class JwtRequestFilter  extends OncePerRequestFilter {
+public class JwtRequestFilter extends OncePerRequestFilter {
+
+    private static final Logger log = LoggerFactory.getLogger(JwtRequestFilter.class);
+
     private final UserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
 
-    private static final List<String> PUBLIC_URLS = List.of("/login", "/register", "/send-reset-otp", "/reset-password", "/logout");
+    // Public URLs that do not require authentication
+    private static final List<String> PUBLIC_URLS = List.of(
+        "/api/auth/login",
+        "/api/auth/face_login",
+        "/api/auth/csrf",
+        "/swagger-ui",
+        "/swagger-ui/index.html",
+        "/v3/api-docs",
+        "/swagger-resources",
+        "/webjars"
+    );
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+        throws ServletException, IOException {
+
         String path = request.getServletPath();
 
-        if (PUBLIC_URLS.contains(path)) {
-            filterChain.doFilter(request, response);
-
-            return;
+        // Skip JWT validation for public URLs
+        for (String publicPath : PUBLIC_URLS) {
+            if (path.startsWith(publicPath)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
         }
 
         String jwt = null;
-        String email = null;
 
-        // check the authorization header
-        final String authaurizationHeader = request.getHeader("Authorization");
-        if (authaurizationHeader != null && authaurizationHeader.startsWith("Bearer ")) {
-            jwt = authaurizationHeader.substring(7);
+        // 1️⃣ Check Authorization header
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            jwt = authHeader.substring(7);
         }
 
-        //2. If not found in the header check the cookies
-        if (jwt != null) {
-            Cookie[] cookies = request.getCookies();
-
-            if (cookies != null) {
-                for (Cookie cookie : cookies) {
-                    if ("jwt".equals(cookie.getName())) {
-                        jwt = cookie.getValue();
-                    }
+        // 2️⃣ Check cookies if not found in header
+        if (jwt == null && request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("jwt".equals(cookie.getName())) {
+                    jwt = cookie.getValue();
                     break;
                 }
             }
         }
 
-        //3. Validate the token and security context
-
+        // 3️⃣ Validate JWT and set authentication
         if (jwt != null) {
-            email = jwtUtil.extractEmail(jwt);
-            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            try {
+                String username = jwtUtil.extractUsername(jwt);
 
-                if (jwtUtil.validateToken(jwt, userDetails)) {
-                    UsernamePasswordAuthenticationToken authenticationToken =
-                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                    authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+                    if (jwtUtil.validateToken(jwt, userDetails)) {
+                        // Extract user role from JWT
+                        UserRole role = jwtUtil.extractUserRole(jwt);
+                        List<SimpleGrantedAuthority> authorities =
+                            List.of(new SimpleGrantedAuthority(role.name()));
+
+                        UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    }
                 }
+            } catch (Exception e) {
+                log.warn("JWT validation failed for request {}: {}", path, e.getMessage());
             }
         }
 

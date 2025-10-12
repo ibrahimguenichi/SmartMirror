@@ -1,48 +1,100 @@
-import { useEffect, useState, useContext } from "react";
-import axios from "axios";
-import { AppContext } from "../context/AppContext";
+import { useEffect, useState } from "react";
+import Layout from "../components/Layout";
+import {
+  Box,
+  Container,
+  Heading,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  TableContainer,
+  Card,
+  CardBody,
+  Spinner,
+  Center,
+  Text,
+  Badge,
+  useColorModeValue,
+} from "@chakra-ui/react";
+import {getAllUsers} from "../api/user";
 
 const AdminDashboard = () => {
-  const { backendURL } = useContext(AppContext);
   const [users, setUsers] = useState([]);
+  
+  const bg = useColorModeValue('white', 'gray.800');
+  const border = useColorModeValue('gray.200', 'gray.700');
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get(`${backendURL}/users/users`, { withCredentials: true });
-        setUsers(response.data);
+        const users = await getAllUsers();
+        setUsers(users);
       } catch (err) {
         console.error("Failed to fetch users:", err);
       }
     };
 
     fetchUsers();
-  }, [backendURL]);
+  }, []);
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
-      <table className="min-w-full border border-gray-300">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="border px-4 py-2">ID</th>
-            <th className="border px-4 py-2">Nom</th>
-            <th className="border px-4 py-2">Email</th>
-            <th className="border px-4 py-2">Role</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user) => (
-            <tr key={user.id}>
-              <td className="border px-4 py-2">{user.id}</td>
-              <td className="border px-4 py-2">{user.firstName} {user.lastName}</td>
-              <td className="border px-4 py-2">{user.email}</td>
-              <td className="border px-4 py-2">{user.role}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <Layout>
+      <Container maxW="container.xl">
+        <Box mb={8}>
+          <Heading size="lg" mb={2}>
+            Admin Dashboard
+          </Heading>
+          <Text color="gray.600">
+            Manage users and system settings
+          </Text>
+        </Box>
+
+        <Card bg={bg} border="1px solid" borderColor={border}>
+          <CardBody>
+            <Heading size="md" mb={4}>
+              Users Management
+            </Heading>
+            <TableContainer>
+              <Table variant="simple">
+                <Thead>
+                  <Tr>
+                    <Th>ID</Th>
+                    <Th>Name</Th>
+                    <Th>Email</Th>
+                    <Th>Role</Th>
+                    <Th>Status</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {users.map((user) => (
+                    <Tr key={user.id}>
+                      <Td>{user.id}</Td>
+                      <Td>{user.firstName} {user.lastName}</Td>
+                      <Td>{user.email}</Td>
+                      <Td>
+                        <Badge 
+                          colorScheme={user.role === 'ADMIN' ? 'red' : 'blue'}
+                        >
+                          {user.userRole}
+                        </Badge>
+                      </Td>
+                      <Td>
+                        <Badge colorScheme="green">
+                          Active
+                        </Badge>
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </TableContainer>
+          </CardBody>
+        </Card>
+      </Container>
+    </Layout>
   );
 };
 

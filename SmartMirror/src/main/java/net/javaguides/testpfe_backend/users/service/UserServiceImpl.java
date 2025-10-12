@@ -1,5 +1,6 @@
 package net.javaguides.testpfe_backend.users.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import net.javaguides.testpfe_backend.users.domain.Client;
 import net.javaguides.testpfe_backend.users.domain.Employee;
@@ -14,7 +15,6 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -59,6 +59,13 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
+    public UserResponse getUserById(Long id) {
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
+        return new UserResponse(user);
+    }
+
+    @Override
     public UserResponse uploadProfileImage(Long userId, MultipartFile file) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
@@ -92,10 +99,4 @@ public class UserServiceImpl implements IUserService {
 
         return new UserResponse(user);
     }
-
-
-
-
-
-
 }

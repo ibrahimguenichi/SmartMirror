@@ -1,8 +1,7 @@
-import React, { useState, useRef, useEffect, useContext } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import orangeLogo from '@/assets/orange_logo.svg';
-import axios from 'axios';
-import { AppContext } from '../context/AppContext';
+import axiosInstance from '../api/axiosInstance';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const FaceRegistration = () => {
@@ -13,7 +12,6 @@ const FaceRegistration = () => {
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
     const streamRef = useRef(null);
-    const { backendURL } = useContext(AppContext);
     const location = useLocation();
     const userId = location.state;
     const navigate = useNavigate();
@@ -135,8 +133,7 @@ const FaceRegistration = () => {
                 
                 formData.append('userId', userId);
 
-                axios.defaults.withCredentials = true;
-                const response = await axios.post(`${backendURL}/face-recognition/upload_face`, formData, {
+                const response = await axiosInstance.post("/face-recognition/upload_face", formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },

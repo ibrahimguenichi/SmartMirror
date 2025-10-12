@@ -1,13 +1,11 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { twMerge } from 'tailwind-merge';
-import { AppContext } from '../context/AppContext';
-import axios from 'axios';
-// import defaultAvatar from '../assets/logo.png'; // Remove this line
+import { useAuth } from '../context/AuthContext';
 
 const Header = ({ className }) => {
   const [time, setTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-  const { isLoggedIn, setIsLoggedIn, userData,setUserData, backendURL } = useContext(AppContext);
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   // Dropdown state
@@ -37,24 +35,11 @@ const Header = ({ className }) => {
   };
 
   const handleLogoutClick = async () => {
-    // setIsLoggedIn(false);
-    // setUserData(null);
-    // // Clear window.userData if it exists
-    // if (window.userData) {
-    //   delete window.userData;
-    // }
-    // navigate('/login');
-
     try {
-      axios.defaults.withCredentials = true;
-      const response = await axios.post(`${backendURL}/auth/logout`);
-      if (response.status === 200) {
-        setIsLoggedIn(false);
-        setUserData(null);
-        navigate("/")
-      }
+      await logout();
+      navigate("/");
     } catch(err) {
-      console.error(err.response.data.message);
+      console.error('Logout failed:', err);
     }
   };
 
@@ -84,20 +69,20 @@ const Header = ({ className }) => {
       </div>
       
       <div className="flex items-center gap-4 relative">
-        {isLoggedIn ? (
+        {user ? (
           <>
             <div className="flex items-center gap-2 cursor-pointer select-none" onClick={() => setDropdownOpen((v) => !v)}>
-              <span className="font-medium text-white text-sm">{userData?.firstName || userData?.username || 'User'}</span>
-              {userData?.profileImage ? (
+              <span className="font-medium text-white text-sm">{user?.firstName || user?.fullname || user?.username || 'User'}</span>
+              {user?.imgURL ? (
                 <img
-                  src={userData.profileImage}
+                  src={user.imgURL}
                   alt="Profile"
                   className="w-9 h-9 rounded-full object-cover border-2 border-orange-500 shadow"
                 />
               ) : (
                 <div className="w-9 h-9 rounded-full flex items-center justify-center bg-orange-500 border-2 border-orange-500 shadow">
                   <span className="text-white font-bold text-lg">
-                    {(userData?.firstName?.[0] || userData?.username?.[0] || 'U').toUpperCase()}
+                    {(user?.firstName?.[0] || user?.fullname?.[0] || user?.username?.[0] || 'U').toUpperCase()}
                   </span>
                 </div>
               )}

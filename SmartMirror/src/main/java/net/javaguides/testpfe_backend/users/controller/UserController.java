@@ -38,14 +38,9 @@ public class UserController {
         return ResponseEntity.ok(userResponse);
     }
 
-    @GetMapping("/users")
+    @GetMapping()
     @PreAuthorize("hasAuthority('ADMIN')") // Seul l’admin peut accéder
     public List<UserResponse> getAllUsers() {
         return userService.getAllUsers();
     }
-
-    
-
-
-
 }
