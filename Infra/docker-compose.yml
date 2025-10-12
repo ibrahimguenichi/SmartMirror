@@ -35,6 +35,16 @@ services:
       - smartmirror_network
     volumes:
       - insightface_models:/root/.insightface
+      - ai_knowledge:/app/data/fablab_knowledge
+    environment:
+      FASTAPI_PORT: ${FASTAPI_PORT:-8000}
+      PGVECTOR_DB_URL: postgres://${DB_USER}:${DB_PASSWORD}@postgres:${DB_PORT}/${DB_NAME}
+    depends_on:
+      - postgres
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      retries: 5
   postgres:
     build:
       context: .
@@ -52,12 +62,16 @@ services:
     restart: unless-stopped
     networks:
       - smartmirror_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      retries: 5
   ngrok_backend:
     image: ngrok/ngrok:latest
     container_name: smartmirror-ngrok-back
     environment:
       NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN_BACK}
-    command: http --url=${URL_BACKEND} backend:8080
+    command: http --url=${URL_BACKEND} host.docker.internal:8080
     depends_on:
       - backend
     networks:
@@ -70,10 +84,25 @@ services:
     command: http --url=${URL_FRONTEND} host.docker.internal:5173
     networks:
       - smartmirror_network
+  pgweb:
+    image: sosedoff/pgweb
+    container_name: pgweb_dev
+    restart: unless-stopped
+    ports:
+      - "55432:8081"
+    environment:
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - smartmirror_network
 
 volumes:
   pgdata:
   insightface_models:
+  llm_models:
+  ai_knowledge:
 
 networks:
   smartmirror_network:
