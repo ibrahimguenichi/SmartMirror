@@ -6,7 +6,7 @@ from app.api.routes_llm import router as llm_router
 
 app = FastAPI(title="Smart Mirror AI Backend", version="1.0")
 
-# CORS setup (if frontend connects directly)
+# CORS setup
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

@@ -39,12 +39,8 @@ services:
     environment:
       FASTAPI_PORT: ${FASTAPI_PORT:-8000}
       PGVECTOR_DB_URL: postgres://${DB_USER}:${DB_PASSWORD}@postgres:${DB_PORT}/${DB_NAME}
-      LLM_API_URL: http://llm:11434  # points to LLM container
-      REDIS_URL: redis://redis:6379  # for memory caching
     depends_on:
       - postgres
-      - llm
-      - redis
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 15s
@@ -101,34 +97,6 @@ services:
         condition: service_healthy
     networks:
       - smartmirror_network
-  llm:
-    build:
-      context: ./llm
-      dockerfile: Dockerfile
-    container_name: LLM_server
-    ports:
-      - "11434:11434"
-    volumes:
-      - llm_models:/root/.ollama
-    restart: always
-    networks:
-      - smartmirror_network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
-      interval: 15s
-      retries: 5
-  redis:
-    image: redis:7-alpine
-    container_name: smartmirror-redis
-    ports:
-      - "6379:6379"
-    restart: always
-    networks:
-      - smartmirror_network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      retries: 5
 
 volumes:
   pgdata:
