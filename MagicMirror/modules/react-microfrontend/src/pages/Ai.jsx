@@ -11,7 +11,7 @@ import {
   useColorModeValue,
   Spinner,
 } from "@chakra-ui/react";
-import axios from "axios";
+import { chat } from "../api/llm";
 
 const Ai = () => {
   const [input, setInput] = useState("");
@@ -32,13 +32,11 @@ const Ai = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:11434/chat", {
-        messages: newMessages,
-      });
+      const response = await chat(input);
 
       setMessages([
         ...newMessages,
-        { role: "ai", text: response.data.reply || "No response" },
+        { role: "ai", text: response.data.response || "No response" },
       ]);
     } catch (err) {
       console.error(err);

@@ -12,3 +12,5 @@ nohup.out
 # Images or test data
 Images_db/
 test-images/
+
+Infra/ollama

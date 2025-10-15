@@ -97,6 +97,22 @@ services:
         condition: service_healthy
     networks:
       - smartmirror_network
+  llm:
+    image: ollama/ollama
+    container_name: ollama_service
+    ports:
+      - "11434:11434"
+    volumes:
+      - llm_models:/root/.ollama
+    environment:
+      - LLM_MODEL=${LLM_MODEL}
+    entrypoint: >
+      bash -c "
+        ollama serve &
+        sleep 5 &&
+        ollama pull ${LLM_MODEL} &&
+        wait
+      "
 
 volumes:
   pgdata:
