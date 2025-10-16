@@ -59,10 +59,10 @@ public class AuthController {
             // 4️⃣ Optionally set JWT as HttpOnly cookie
             ResponseCookie cookie = ResponseCookie.from("jwt", jwtToken)
                 .httpOnly(true)
-                .secure(false)
+                .secure(true)
                 .path("/")
                 .maxAge(Duration.ofDays(10))
-                .sameSite("Lax")
+                .sameSite("Strict")
                 .build();
 
             // 5️⃣ Return response with JWT
@@ -93,10 +93,6 @@ public class AuthController {
             // Load user details
             final UserDetails userDetails = userDetailsService.loadUserByUsername(requestBody.getEmail());
             User user = (User) userDetails;
-            
-            // Debug logging
-            log.info("Login attempt for email: {}", requestBody.getEmail());
-            log.info("Found user: ID={}, Email={}, Role={}", user.getId(), user.getEmail(), user.getUserRole());
 
             // Generate JWT including user ID and role
             final String jwtToken = jwtUtil.generateToken(userDetails, user.getId(), user.getUserRole());
@@ -104,10 +100,10 @@ public class AuthController {
             // Optional: set JWT as HttpOnly cookie
             ResponseCookie cookie = ResponseCookie.from("jwt", jwtToken)
                 .httpOnly(true)
-                .secure(false)
+                .secure(true)
                 .path("/")
                 .maxAge(Duration.ofDays(10))
-                .sameSite("Lax")
+                .sameSite("Strict")
                 .build();
 
             return ResponseEntity.ok()
@@ -142,10 +138,10 @@ public class AuthController {
 
             ResponseCookie cookie = ResponseCookie.from("jwt", jwtToken)
                 .httpOnly(true)
-                .secure(false)
+                .secure(true)
                 .path("/")
                 .maxAge(Duration.ofDays(10))
-                .sameSite("Lax")
+                .sameSite("Strict")
                 .build();
 
             return ResponseEntity.ok()
@@ -161,50 +157,23 @@ public class AuthController {
 
     /**
      * Returns details of the currently authenticated user.
-     * Uses Spring Security's authentication context.
+     * Fetches user ID from JWT.
      */
     @GetMapping("/me")
     public ResponseEntity<?> getSession(HttpServletRequest request) {
-        try {
-            // Get authentication from Spring Security context
-            String header = request.getHeader("Authorization");
-            String token = null;
-            
-            // 1. Try to get JWT from Authorization header
-            if (header != null && header.startsWith("Bearer ")) {
-                token = header.substring(7);
-            }
-            
-            // 2. Try to get JWT from cookies if not in header
-            if (token == null && request.getCookies() != null) {
-                for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
-                    if ("jwt".equals(cookie.getName())) {
-                        token = cookie.getValue();
-                        break;
-                    }
-                }
-            }
-            
-            if (token == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated");
-            }
+        String header = request.getHeader("Authorization");
+        if (header == null || !header.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated");
+        }
+        String token = header.substring(7);
 
-            // Extract user ID from token
+        try {
             Long userId = jwtUtil.extractUserId(token);
             if (userId == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
             }
-            
-            // Debug logging
-            log.info("Auth/me request - Extracted userId from token: {}", userId);
-            
-            // Return user data
-            var userData = authService.getUserById(userId);
-            log.info("Auth/me response - Returning user: ID={}, Email={}, Role={}", 
-                userData.getId(), userData.getEmail(), userData.getUserRole());
-            return ResponseEntity.ok(userData);
+            return ResponseEntity.ok(authService.getUserById(userId));
         } catch (Exception e) {
-            log.error("Error in /auth/me: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired token");
         }
     }
@@ -226,10 +195,10 @@ public class AuthController {
     public ResponseEntity<?> logout() {
         ResponseCookie cookie = ResponseCookie.from("jwt", "")
             .httpOnly(true)
-            .secure(false)
+            .secure(true)
             .path("/")
             .maxAge(0)
-            .sameSite("None")
+            .sameSite("Strict")
             .build();
 
         return ResponseEntity.ok()

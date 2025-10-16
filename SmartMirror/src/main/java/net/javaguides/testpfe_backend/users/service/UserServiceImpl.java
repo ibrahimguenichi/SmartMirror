@@ -99,4 +99,30 @@ public class UserServiceImpl implements IUserService {
 
         return new UserResponse(user);
     }
+    @Override
+    public AiProfileResponse getAiProfileById(Long id) {
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        String fullName = (user.getFirstName() != null ? user.getFirstName() : "")
+            + (user.getLastName() != null ? (" " + user.getLastName()) : "");
+
+        String ageGroup;
+        int age = user.getAge();
+        if (age < 18) ageGroup = "<18";
+        else if (age <= 25) ageGroup = "18-25";
+        else if (age <= 35) ageGroup = "26-35";
+        else if (age <= 50) ageGroup = "36-50";
+        else ageGroup = "50+";
+
+        return AiProfileResponse.builder()
+            .userId(String.valueOf(user.getId()))
+            .fullName(fullName.trim())
+            .ageGroup(ageGroup)
+            .role(user.getUserRole() != null ? user.getUserRole().name().toLowerCase() : "member")
+            .team("unassigned")
+            .language("fr")
+            .userNotes("")
+            .build();
+    }
 }

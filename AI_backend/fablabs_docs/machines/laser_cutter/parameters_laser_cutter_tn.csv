@@ -1,0 +1,8 @@
+material,brand,thickness_mm,speed_mm_s,power_pct,passes,air_assist,comments
+MDF,generic,3,25,70,1,on,Défaut recommandé
+MDF,generic,6,15,80,1,on,Surveiller fumées
+Acrylic,cast,3,20,75,1,on,Retirer film protecteur
+Acrylic,extruded,3,18,80,1,on,Attention bavures
+Plywood,birch,3,22,75,1,on,Varie selon qualité
+Cardboard,craft,2,50,40,1,off,Surveiller flammes
+Leather,vegetable,2,15,65,1,on,Tester teinte

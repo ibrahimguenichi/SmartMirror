@@ -1,0 +1,5 @@
+material,thickness_mm,speed_mm_s,power_pct,passes,notes,price_tnd_per_unit
+MDF,3,25,70,1,Test sur bord,2.50
+MDF,6,15,80,1,Veiller à la fumée,5.00
+Acrylic,3,20,75,1,Retirer film protecteur,4.00
+Cardboard,2,50,40,1,Surveiller flammes,1.00

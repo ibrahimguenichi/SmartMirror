@@ -39,6 +39,8 @@ services:
     environment:
       FASTAPI_PORT: ${FASTAPI_PORT:-8000}
       PGVECTOR_DB_URL: postgres://${DB_USER}:${DB_PASSWORD}@postgres:${DB_PORT}/${DB_NAME}
+      SPRING_BACKEND_URL: http://backend:8080/api
+      AI_SERVICE_TOKEN: ${AI_SERVICE_TOKEN}
     depends_on:
       - postgres
     healthcheck:
