@@ -63,6 +63,7 @@
 		"*.css": "stylelint --fix"
 	},
 	"dependencies": {
+		"@vladmandic/face-api": "^1.7.15",
 		"ajv": "^8.17.1",
 		"ansis": "^3.17.0",
 		"console-stamp": "^3.1.2",

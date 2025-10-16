@@ -27,6 +27,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project files
 COPY . .
 
+# Seed FabLabs knowledge into image so the named volume initializes with it
+RUN mkdir -p /app/data/fablab_knowledge
+COPY fablabs_docs/ /app/data/fablab_knowledge/
+
 # Expose FastAPI default port
 EXPOSE 8000
 

@@ -2,7 +2,7 @@ import * as faceapi from "@vladmandic/face-api"
 import QRCode from "qrcode"
 
 let snapshotSent = false
-const REQUIRED_FRONTAL_TIME = 3000 // 3 seconds
+const REQUIRED_FRONTAL_TIME = 3000
 let paused = false
 let failedLoginCount = 0
 const MAX_FAILED_ATTEMPTS = 3
@@ -10,6 +10,10 @@ const MAX_FAILED_ATTEMPTS = 3
 async function detectAndSend(video) {
   await faceapi.nets.tinyFaceDetector.loadFromUri("/modules/camera/models")
   await faceapi.nets.faceLandmark68Net.loadFromUri("/modules/camera/models")
+
+   if (!faceapi.nets.tinyFaceDetector.params || !faceapi.nets.faceLandmark68Net.params) {
+      throw new Error("❌ One or more FaceAPI models did not load correctly")
+    }
 
   console.log("✅ FaceAPI models loaded")
 
