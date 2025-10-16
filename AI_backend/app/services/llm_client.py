@@ -2,7 +2,7 @@ import os
 import requests
 from app.config import LLM_API_URL
 
-def query_llm(prompt: str, model: str = "gemma3:1b") -> str:
+def query_llm(prompt: str, model: str = "llama3.1:8b") -> str:
     """Send a prompt to the LLM container and return the generated text."""
     url = f"{LLM_API_URL}/api/generate"
     
