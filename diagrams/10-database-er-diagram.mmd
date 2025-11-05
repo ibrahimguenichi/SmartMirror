@@ -1,0 +1,52 @@
+erDiagram
+    USERS ||--o{ RESERVATIONS : makes
+    USERS ||--o| FACE_DATA : has
+    USERS ||--o{ USER_CONNECTED_ACCOUNTS : links
+    
+    USERS {
+        bigint id PK
+        varchar email UK
+        varchar first_name
+        varchar last_name
+        varchar phone_num
+        int age
+        varchar sexe
+        varchar training_location
+        varchar profile_image_url
+        varchar password
+        varchar user_role
+        varchar user_type
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    RESERVATIONS {
+        bigint id PK
+        bigint user_id FK
+        varchar activity
+        varchar age_group
+        varchar task
+        date date
+        time start_time
+        interval duration
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    FACE_DATA {
+        bigint id PK
+        bigint user_id FK,UK
+        float-array embedding "512-dimensional vector"
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    USER_CONNECTED_ACCOUNTS {
+        bigint id PK
+        bigint user_id FK
+        varchar provider
+        varchar provider_id
+        varchar access_token
+        timestamp created_at
+        timestamp updated_at
+    }

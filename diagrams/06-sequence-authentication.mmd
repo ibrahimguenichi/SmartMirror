@@ -1,0 +1,35 @@
+sequenceDiagram
+    autonumber
+    actor User
+    participant MM as MagicMirror UI
+    participant AuthCtrl as AuthController
+    participant AuthSvc as AuthService
+    participant Security as SecurityConfig
+    participant UserRepo as UserRepository
+    participant JWT as JwtTokenProvider
+    participant DB as PostgreSQL
+
+    User->>MM: Enter credentials (email, password)
+    MM->>AuthCtrl: POST /api/auth/login {email, password}
+    AuthCtrl->>AuthSvc: authenticate(LoginRequest)
+    AuthSvc->>Security: authenticate(email, password)
+    Security->>UserRepo: findByEmail(email)
+    UserRepo->>DB: SELECT * FROM users WHERE email = ?
+    DB-->>UserRepo: User record
+    UserRepo-->>Security: User entity
+    Security->>Security: passwordEncoder.matches(password, user.password)
+    
+    alt Password valid
+        Security-->>AuthSvc: Authentication success
+        AuthSvc->>JWT: generateToken(user)
+        JWT-->>AuthSvc: JWT token
+        AuthSvc-->>AuthCtrl: AuthResponse(token, user)
+        AuthCtrl-->>MM: 200 OK {token, userDetails}
+        MM->>MM: Store token in localStorage
+        MM-->>User: Redirect to dashboard
+    else Password invalid
+        Security-->>AuthSvc: AuthenticationException
+        AuthSvc-->>AuthCtrl: Exception
+        AuthCtrl-->>MM: 401 Unauthorized
+        MM-->>User: Show error message
+    end

@@ -1,0 +1,38 @@
+C4Container
+    title Container Diagram - SmartMirror Architecture
+
+    Person(user, "User", "Interacts with smart mirror")
+    
+    Container_Boundary(frontend, "Frontend Layer") {
+        Container(magicMirror, "MagicMirror", "Node.js, Electron, Socket.io", "Smart mirror UI with modular widgets")
+        Container(modules, "MM Modules", "JavaScript", "Weather, News, Camera, Compliments modules")
+    }
+    
+    Container_Boundary(backend, "Backend Layer") {
+        Container(springBoot, "Spring Boot API", "Java 17, Spring Boot 3.4", "REST API for business logic, auth, reservations")
+        Container(fastAPI, "AI Backend", "Python, FastAPI", "Face recognition (InsightFace) and LLM chat")
+    }
+    
+    Container_Boundary(data, "Data Layer") {
+        ContainerDb(postgres, "PostgreSQL", "PostgreSQL 15 + pgvector", "Stores users, reservations, face embeddings (512-dim vectors)")
+    }
+    
+    Container_Boundary(services, "External Services") {
+        Container(ollama, "Ollama LLM", "Local LLM Service", "Conversational AI model")
+        Container(ngrok, "Ngrok Tunnels", "Reverse Proxy", "Exposes local services publicly")
+    }
+    
+    Rel(user, magicMirror, "Views/Interacts", "HTTP, WebSocket")
+    Rel(magicMirror, modules, "Loads", "JavaScript")
+    Rel(magicMirror, springBoot, "API Calls", "REST/JSON")
+    Rel(magicMirror, fastAPI, "Face & Chat", "REST/JSON")
+    
+    Rel(springBoot, postgres, "CRUD Operations", "JDBC/JPA")
+    Rel(fastAPI, postgres, "Vector Search", "pgvector SQL")
+    Rel(fastAPI, ollama, "Chat Requests", "HTTP/JSON")
+    Rel(fastAPI, springBoot, "User Profile", "REST API")
+    
+    Rel(ngrok, springBoot, "Proxies", "HTTP")
+    Rel(ngrok, magicMirror, "Proxies", "HTTP")
+    
+    UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="2")

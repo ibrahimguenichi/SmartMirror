@@ -1,0 +1,49 @@
+C4Component
+    title Component Diagram - Spring Boot Backend
+
+    Container_Boundary(springBoot, "Spring Boot Backend") {
+        Component(authController, "AuthController", "REST Controller", "Handles login, registration, OAuth2")
+        Component(userController, "UserController", "REST Controller", "User CRUD operations")
+        Component(reservationController, "ReservationController", "REST Controller", "Manages reservations")
+        Component(faceController, "FaceRecognitionController", "REST Controller", "Saves face embeddings")
+        
+        Component(authService, "AuthService", "Service", "Authentication business logic")
+        Component(userService, "UserServiceImpl", "Service", "User management logic")
+        Component(reservationService, "ReservationServiceImpl", "Service", "Reservation logic")
+        Component(faceService, "FaceRecognitionServiceImpl", "Service", "Face data management")
+        Component(emailService, "EmailService", "Service", "Sends email notifications")
+        
+        Component(userRepo, "UserRepository", "JPA Repository", "User entity persistence")
+        Component(reservationRepo, "ReservationRepository", "JPA Repository", "Reservation persistence")
+        Component(faceRepo, "FaceDataRepository", "JPA Repository", "FaceData persistence")
+        
+        Component(security, "SecurityConfiguration", "Spring Security", "JWT auth, OAuth2, CORS")
+        Component(jwtUtil, "JwtTokenProvider", "Utility", "Generate/validate JWT tokens")
+    }
+    
+    ContainerDb(postgres, "PostgreSQL", "Database")
+    Container(aiBackend, "AI Backend", "FastAPI")
+    
+    Rel(authController, authService, "Uses")
+    Rel(userController, userService, "Uses")
+    Rel(reservationController, reservationService, "Uses")
+    Rel(faceController, faceService, "Uses")
+    
+    Rel(authService, userRepo, "Queries")
+    Rel(authService, jwtUtil, "Generates tokens")
+    Rel(authService, emailService, "Sends emails")
+    Rel(userService, userRepo, "CRUD")
+    Rel(reservationService, reservationRepo, "CRUD")
+    Rel(faceService, faceRepo, "CRUD")
+    
+    Rel(userRepo, postgres, "Reads/Writes", "JPA/JDBC")
+    Rel(reservationRepo, postgres, "Reads/Writes", "JPA/JDBC")
+    Rel(faceRepo, postgres, "Reads/Writes", "JPA/JDBC")
+    
+    Rel(security, authController, "Secures")
+    Rel(security, userController, "Secures")
+    Rel(security, reservationController, "Secures")
+    
+    Rel(aiBackend, faceController, "Sends embeddings", "HTTP POST")
+    
+    UpdateLayoutConfig($c4ShapeInRow="4", $c4BoundaryInRow="1")

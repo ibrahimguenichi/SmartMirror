@@ -1,0 +1,33 @@
+C4Context
+    title System Context Diagram - SmartMirror Platform
+
+    Person(endUser, "End User", "FabLab member or visitor interacting with the smart mirror")
+    Person(admin, "Administrator", "Manages users, reservations, and system configuration")
+    
+    System_Boundary(smartMirror, "SmartMirror System") {
+        System(mirrorUI, "MagicMirror UI", "Interactive smart mirror interface with modules")
+        System(backend, "Spring Boot Backend", "Core business logic, user management, reservations")
+        System(aiBackend, "AI Backend", "Face recognition and LLM chat services")
+        SystemDb(database, "PostgreSQL + pgvector", "Stores users, reservations, face embeddings")
+    }
+    
+    System_Ext(ollama, "Ollama LLM", "Local language model for conversational AI")
+    System_Ext(oauth, "OAuth2 Providers", "Google/GitHub authentication")
+    System_Ext(email, "Email Service", "SMTP server for notifications")
+    System_Ext(weatherAPI, "Weather API", "OpenMeteo weather data")
+    System_Ext(newsAPI, "News RSS Feeds", "External news sources")
+    
+    Rel(endUser, mirrorUI, "Interacts with", "HTTP/WebSocket")
+    Rel(admin, backend, "Manages", "HTTPS/REST")
+    
+    Rel(mirrorUI, backend, "Fetches data", "REST API")
+    Rel(mirrorUI, aiBackend, "Face recognition, Chat", "REST API")
+    Rel(backend, database, "Reads/Writes", "JDBC")
+    Rel(aiBackend, database, "Stores/Queries embeddings", "JDBC/pgvector")
+    Rel(aiBackend, ollama, "Queries", "HTTP API")
+    Rel(backend, oauth, "Authenticates", "OAuth2")
+    Rel(backend, email, "Sends notifications", "SMTP")
+    Rel(mirrorUI, weatherAPI, "Fetches weather", "HTTP")
+    Rel(mirrorUI, newsAPI, "Fetches news", "RSS/HTTP")
+    
+    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")

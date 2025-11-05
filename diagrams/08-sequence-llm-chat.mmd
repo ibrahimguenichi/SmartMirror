@@ -1,0 +1,36 @@
+sequenceDiagram
+    autonumber
+    actor User
+    participant MM as MagicMirror UI
+    participant AIBackend as FastAPI AI Backend
+    participant APIClient as API Client
+    participant SpringBoot as Spring Boot Backend
+    participant UserService as UserService
+    participant DB as PostgreSQL
+    participant FabLabDocs as FabLab Docs Loader
+    participant Ollama as Ollama LLM Service
+
+    User->>MM: Type message in chat
+    MM->>AIBackend: POST /llm/chat {prompt, userId}
+    
+    alt userId provided
+        AIBackend->>APIClient: fetch_ai_profile(userId)
+        APIClient->>SpringBoot: GET /api/users/{userId}/ai-profile
+        SpringBoot->>UserService: getUserProfile(userId)
+        UserService->>DB: SELECT user, preferences, role FROM users WHERE id = ?
+        DB-->>UserService: User data
+        UserService-->>SpringBoot: UserProfileDTO
+        SpringBoot-->>APIClient: 200 OK {userId, fullName, ageGroup, role, language, notes}
+        APIClient-->>AIBackend: user_profile
+        AIBackend->>AIBackend: Enrich prompt with user context
+    end
+    
+    AIBackend->>FabLabDocs: load_fablabs_docs()
+    FabLabDocs-->>AIBackend: fablabs_context (docs content)
+    AIBackend->>AIBackend: Build enriched_prompt =<br/>[USER_PROFILE] + [FABLAB_CONTEXT] + prompt
+    
+    AIBackend->>Ollama: POST /api/generate {model, prompt: enriched_prompt}
+    Ollama->>Ollama: Generate response
+    Ollama-->>AIBackend: {response: "AI response text"}
+    AIBackend-->>MM: 200 OK {response: "AI response text"}
+    MM-->>User: Display chatbot response

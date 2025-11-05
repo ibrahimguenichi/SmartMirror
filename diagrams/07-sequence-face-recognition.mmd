@@ -1,0 +1,29 @@
+sequenceDiagram
+    autonumber
+    actor User
+    participant MM as MagicMirror UI
+    participant AIBackend as FastAPI AI Backend
+    participant FaceDetector as InsightFace Model
+    participant APIClient as API Client
+    participant SpringBoot as Spring Boot Backend
+    participant FaceService as FaceRecognitionService
+    participant DB as PostgreSQL (pgvector)
+
+    User->>MM: Click "Register Face"
+    MM->>MM: Capture image from camera
+    MM->>AIBackend: POST /api/face-recognition/extract-embedding<br/>{userId, imageFile}
+    AIBackend->>AIBackend: Save temp file
+    AIBackend->>FaceDetector: get_embedding(imagePath)
+    FaceDetector->>FaceDetector: Detect face & extract 512-dim vector
+    FaceDetector-->>AIBackend: embedding[512]
+    
+    AIBackend->>APIClient: send_embedding(userId, embedding)
+    APIClient->>SpringBoot: POST /api/face-recognition/save_embedding<br/>{userId, embedding}
+    SpringBoot->>FaceService: saveFaceEmbedding(userId, embedding)
+    FaceService->>DB: INSERT INTO face_data (user_id, embedding, created_at)<br/>VALUES (?, ?::vector, NOW())
+    DB-->>FaceService: Success
+    FaceService-->>SpringBoot: FaceData entity
+    SpringBoot-->>APIClient: 200 OK {status: "success"}
+    APIClient-->>AIBackend: Response
+    AIBackend-->>MM: 200 OK {status: "success", embedding, backend_response}
+    MM-->>User: Display "Face registered successfully"

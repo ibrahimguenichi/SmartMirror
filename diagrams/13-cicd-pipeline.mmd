@@ -1,0 +1,49 @@
+flowchart LR
+    Start([Developer Push]) --> GitCommit[Git Commit<br/>to main/develop]
+    GitCommit --> Trigger[Trigger CI Pipeline]
+    
+    Trigger --> Lint{Code Quality<br/>Checks}
+    Lint -->|ESLint, Prettier| LintJS[Lint JavaScript]
+    Lint -->|Maven Checkstyle| LintJava[Lint Java]
+    Lint -->|Black, Flake8| LintPython[Lint Python]
+    
+    LintJS --> Test
+    LintJava --> Test
+    LintPython --> Test
+    
+    Test{Run Tests} -->|Jest| TestFrontend[Frontend Tests]
+    Test -->|JUnit| TestBackend[Spring Tests]
+    Test -->|Pytest| TestAI[AI Backend Tests]
+    
+    TestFrontend --> Build
+    TestBackend --> Build
+    TestAI --> Build
+    
+    Build{Build<br/>Artifacts} -->|npm build| BuildFE[Build MagicMirror]
+    Build -->|Maven package| BuildBE[Build Spring JAR]
+    Build -->|Docker build| BuildAI[Build AI Image]
+    
+    BuildFE --> DockerCompose
+    BuildBE --> DockerCompose
+    BuildAI --> DockerCompose
+    
+    DockerCompose[Build Docker Images] --> Push[Push to Registry<br/>Docker Hub/GHCR]
+    Push --> Deploy{Deploy}
+    
+    Deploy -->|Dev| DevEnv[Dev Environment]
+    Deploy -->|Staging| StagingEnv[Staging Environment]
+    Deploy -->|Prod| ProdEnv[Production Environment]
+    
+    DevEnv --> Notify
+    StagingEnv --> Notify
+    ProdEnv --> Notify
+    
+    Notify[Notify Team<br/>Slack/Email] --> End([Pipeline Complete])
+    
+    classDef checkNode fill:#FFD93D,stroke:#333,stroke-width:2px
+    classDef buildNode fill:#6BCB77,stroke:#333,stroke-width:2px
+    classDef deployNode fill:#4D96FF,stroke:#333,stroke-width:2px
+    
+    class Lint,Test checkNode
+    class Build,DockerCompose,Push buildNode
+    class Deploy,DevEnv,StagingEnv,ProdEnv deployNode

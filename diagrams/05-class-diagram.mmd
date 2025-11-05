@@ -1,0 +1,104 @@
+classDiagram
+    class AbstractEntity {
+        <<abstract>>
+        +Long id
+        +LocalDateTime createdAt
+        +LocalDateTime updatedAt
+    }
+    
+    class User {
+        <<Entity>>
+        +String email
+        +String firstName
+        +String lastName
+        +String phoneNum
+        +int age
+        +Sexe sexe
+        +String trainingLocation
+        +String profileImageUrl
+        +String password
+        +UserRole userRole
+        +getUsername() String
+        +getAuthorities() Collection~GrantedAuthority~
+    }
+    
+    class Employee {
+        <<Entity>>
+        +String position
+        +String department
+    }
+    
+    class Client {
+        <<Entity>>
+        +String company
+        +String billingAddress
+    }
+    
+    class Reservation {
+        <<Entity>>
+        +Activity activity
+        +AgeGroup ageGroup
+        +Task task
+        +LocalDate date
+        +LocalTime startTime
+        +Duration duration
+    }
+    
+    class FaceData {
+        <<Entity>>
+        +float[] embedding
+        +LocalDateTime createdAt
+    }
+    
+    class UserConnectedAccount {
+        <<Entity>>
+        +String provider
+        +String providerId
+        +String accessToken
+    }
+    
+    class UserRole {
+        <<enumeration>>
+        USER
+        ADMIN
+        EMPLOYEE
+    }
+    
+    class Sexe {
+        <<enumeration>>
+        MALE
+        FEMALE
+        OTHER
+    }
+    
+    class Activity {
+        <<enumeration>>
+        WORKSHOP
+        TRAINING
+        MACHINE_USE
+        EVENT
+    }
+    
+    class AgeGroup {
+        <<enumeration>>
+        CHILD
+        TEEN
+        ADULT
+        SENIOR
+    }
+    
+    AbstractEntity <|-- User
+    User <|-- Employee
+    User <|-- Client
+    AbstractEntity <|-- Reservation
+    AbstractEntity <|-- FaceData
+    AbstractEntity <|-- UserConnectedAccount
+    
+    User "1" -- "0..1" FaceData : has >
+    User "1" -- "0..*" Reservation : makes >
+    User "1" -- "0..*" UserConnectedAccount : links >
+    
+    User ..> UserRole : uses
+    User ..> Sexe : uses
+    Reservation ..> Activity : uses
+    Reservation ..> AgeGroup : uses

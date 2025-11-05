@@ -1,0 +1,54 @@
+flowchart TB
+    User([User])
+    Camera[Camera Device]
+    
+    subgraph "Data Capture"
+        ImageCapture[Image Capture<br/>MagicMirror Camera Module]
+        ImageData[(Image Binary Data)]
+    end
+    
+    subgraph "AI Processing"
+        AIBackend[AI Backend<br/>FastAPI]
+        InsightFace[InsightFace Model<br/>Face Detection]
+        Embedding[Embedding Extraction<br/>512-dimensional vector]
+    end
+    
+    subgraph "Data Storage"
+        SpringBackend[Spring Boot Backend]
+        Validation[Validate User<br/>& Embedding]
+        PGVector[(PostgreSQL<br/>pgvector extension)]
+    end
+    
+    subgraph "Face Matching"
+        SearchQuery[Vector Similarity Search<br/>Cosine Distance]
+        Match{Match Found?}
+        AuthResult[Authentication Result]
+    end
+    
+    User -->|Faces camera| Camera
+    Camera -->|Streams video| ImageCapture
+    ImageCapture -->|Sends frame| ImageData
+    
+    ImageData -->|POST /extract-embedding| AIBackend
+    AIBackend -->|Process image| InsightFace
+    InsightFace -->|Detect face| Embedding
+    
+    Embedding -->|Send embedding + userId| SpringBackend
+    SpringBackend --> Validation
+    Validation -->|Store vector| PGVector
+    
+    PGVector -.->|Query for login| SearchQuery
+    SearchQuery --> Match
+    Match -->|Distance < threshold| AuthResult
+    Match -->|Distance >= threshold| AuthFail[Authentication Failed]
+    
+    AuthResult -->|Success| User
+    AuthFail -->|Retry or manual login| User
+    
+    classDef process fill:#4ECDC4,stroke:#333,stroke-width:2px
+    classDef storage fill:#FF6B6B,stroke:#333,stroke-width:2px
+    classDef decision fill:#FFD93D,stroke:#333,stroke-width:2px
+    
+    class ImageCapture,AIBackend,InsightFace,Embedding,SpringBackend,Validation,SearchQuery process
+    class ImageData,PGVector storage
+    class Match decision

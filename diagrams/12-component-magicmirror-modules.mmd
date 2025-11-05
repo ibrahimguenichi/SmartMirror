@@ -1,0 +1,50 @@
+graph TB
+    subgraph "MagicMirror Core"
+        App[App.js<br/>Main Application]
+        Loader[Loader.js<br/>Module Loader]
+        SocketClient[Socket Client<br/>WebSocket Communication]
+        Server[Server.js<br/>Express + Socket.io]
+    end
+    
+    subgraph "Default Modules"
+        Clock[Clock Module<br/>Time Display]
+        Weather[Weather Module<br/>OpenMeteo API]
+        News[News Feed Module<br/>RSS Parser]
+        Compliments[Compliments Module<br/>Random Messages]
+    end
+    
+    subgraph "Custom Modules"
+        Camera[Camera Module<br/>Face Detection UI]
+        ReactMF[React Microfrontend<br/>Custom Components]
+    end
+    
+    subgraph "Backend Services"
+        SpringAPI[Spring Boot API<br/>:8080]
+        AIAPI[AI Backend<br/>:8000]
+    end
+    
+    App --> Loader
+    Loader --> Clock
+    Loader --> Weather
+    Loader --> News
+    Loader --> Compliments
+    Loader --> Camera
+    Loader --> ReactMF
+    
+    App --> SocketClient
+    SocketClient <--> Server
+    
+    Weather -->|HTTP GET| WeatherAPI[OpenMeteo API]
+    News -->|HTTP GET| RSSAPI[RSS Feeds]
+    Camera -->|REST API| AIAPI
+    ReactMF -->|REST API| SpringAPI
+    
+    Server -->|File Serving| App
+    
+    classDef core fill:#FF6B6B,stroke:#333,stroke-width:2px
+    classDef module fill:#4ECDC4,stroke:#333,stroke-width:2px
+    classDef backend fill:#95E1D3,stroke:#333,stroke-width:2px
+    
+    class App,Loader,SocketClient,Server core
+    class Clock,Weather,News,Compliments,Camera,ReactMF module
+    class SpringAPI,AIAPI backend

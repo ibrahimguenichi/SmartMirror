@@ -1,0 +1,33 @@
+C4Component
+    title Component Diagram - AI Backend (FastAPI)
+
+    Container_Boundary(aiBackend, "AI Backend (FastAPI)") {
+        Component(faceRouter, "FaceRouter", "API Routes", "POST /api/face-recognition/extract-embedding")
+        Component(llmRouter, "LLMRouter", "API Routes", "POST /llm/chat")
+        Component(healthRouter, "HealthRouter", "API Routes", "GET /api/health")
+        
+        Component(faceService, "FaceService", "Service", "Face detection and embedding extraction")
+        Component(llmClient, "LLMClient", "Service", "Queries Ollama LLM with context")
+        Component(apiClient, "APIClient", "HTTP Client", "Communicates with Spring Backend")
+        
+        Component(faceDetector, "FaceDetector", "Model", "InsightFace model for face embeddings")
+        Component(fabLabDocs, "FabLab Docs Loader", "Context", "Loads FabLab documentation for LLM")
+    }
+    
+    Container(ollama, "Ollama LLM", "LLM Service")
+    Container(springBoot, "Spring Boot API", "Backend")
+    ContainerDb(postgres, "PostgreSQL + pgvector", "Database")
+    
+    Rel(faceRouter, faceService, "Calls")
+    Rel(llmRouter, llmClient, "Calls")
+    
+    Rel(faceService, faceDetector, "Uses", "InsightFace")
+    Rel(faceService, apiClient, "Sends embedding", "HTTP POST")
+    Rel(llmClient, ollama, "Queries", "HTTP/JSON")
+    Rel(llmClient, apiClient, "Fetches user profile", "HTTP GET")
+    Rel(llmClient, fabLabDocs, "Loads context")
+    
+    Rel(apiClient, springBoot, "HTTP requests", "REST")
+    Rel(faceDetector, postgres, "Stores vectors", "pgvector")
+    
+    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")

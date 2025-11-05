@@ -1,0 +1,27 @@
+stateDiagram-v2
+    [*] --> Draft: User starts creating reservation
+    Draft --> Pending: Submit reservation
+    Pending --> Confirmed: Admin/System approves
+    Pending --> Rejected: Admin rejects
+    
+    Confirmed --> InProgress: Start time reached & user checks in
+    Confirmed --> Cancelled: User cancels before start
+    Confirmed --> NoShow: Start time passed, no check-in
+    
+    InProgress --> Completed: End time reached
+    InProgress --> Cancelled: Emergency cancellation
+    
+    Completed --> [*]
+    Cancelled --> [*]
+    Rejected --> [*]
+    NoShow --> [*]
+    
+    note right of Pending
+        Email notification sent
+        to user and admin
+    end note
+    
+    note right of InProgress
+        Resources locked
+        for this user
+    end note

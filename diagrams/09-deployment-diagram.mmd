@@ -1,0 +1,78 @@
+graph TB
+    subgraph "Host Machine (Linux/Docker)"
+        subgraph "Docker Network: smartmirror_network"
+            
+            subgraph "Backend Container<br/>(smartmirror-backend)"
+                SpringBoot[Spring Boot API<br/>Port: 8080<br/>Java 17]
+            end
+            
+            subgraph "AI Backend Container<br/>(AI_backend)"
+                FastAPI[FastAPI AI Backend<br/>Port: 8000<br/>Python]
+            end
+            
+            subgraph "Database Container<br/>(SmartMirror-db)"
+                Postgres[PostgreSQL 15<br/>+ pgvector<br/>Port: 5432]
+            end
+            
+            subgraph "LLM Container<br/>(ollama_service)"
+                Ollama[Ollama LLM<br/>Port: 11434]
+            end
+            
+            subgraph "Web UI Container<br/>(pgweb_dev)"
+                PgWeb[PgWeb UI<br/>Port: 55432]
+            end
+            
+            subgraph "Ngrok Tunnels"
+                NgrokBack[Ngrok Backend<br/>Exposes :8080]
+                NgrokFront[Ngrok Frontend<br/>Exposes :5173]
+            end
+        end
+        
+        subgraph "Host Process (Outside Docker)"
+            MagicMirror[MagicMirror UI<br/>Node.js/Electron<br/>Port: 5173]
+        end
+        
+        subgraph "Docker Volumes"
+            PgData[pgdata<br/>PostgreSQL data]
+            InsightFace[insightface_models<br/>AI models]
+            LLMModels[llm_models<br/>Ollama models]
+            AIKnowledge[ai_knowledge<br/>FabLab docs]
+        end
+    end
+    
+    subgraph "External Services"
+        Internet[Internet Users]
+        OAuth[OAuth2 Providers<br/>Google, GitHub]
+        SMTP[Email SMTP Server]
+        WeatherAPI[Weather API<br/>OpenMeteo]
+    end
+    
+    MagicMirror -->|REST API| SpringBoot
+    MagicMirror -->|Face/Chat API| FastAPI
+    SpringBoot -->|JDBC| Postgres
+    FastAPI -->|pgvector| Postgres
+    FastAPI -->|HTTP API| Ollama
+    FastAPI -->|User Profile| SpringBoot
+    PgWeb -->|DB Admin| Postgres
+    
+    Postgres -.->|Persists| PgData
+    FastAPI -.->|Loads| InsightFace
+    FastAPI -.->|Loads| AIKnowledge
+    Ollama -.->|Loads| LLMModels
+    
+    NgrokBack -->|Tunnel| SpringBoot
+    NgrokFront -->|Tunnel| MagicMirror
+    Internet -->|HTTPS| NgrokBack
+    Internet -->|HTTPS| NgrokFront
+    
+    SpringBoot -->|OAuth2| OAuth
+    SpringBoot -->|SMTP| SMTP
+    MagicMirror -->|HTTP| WeatherAPI
+    
+    classDef container fill:#326CE5,stroke:#fff,stroke-width:2px,color:#fff
+    classDef volume fill:#FF6B6B,stroke:#fff,stroke-width:2px,color:#fff
+    classDef external fill:#4ECDC4,stroke:#fff,stroke-width:2px,color:#fff
+    
+    class SpringBoot,FastAPI,Postgres,Ollama,PgWeb,MagicMirror,NgrokBack,NgrokFront container
+    class PgData,InsightFace,LLMModels,AIKnowledge volume
+    class Internet,OAuth,SMTP,WeatherAPI external
