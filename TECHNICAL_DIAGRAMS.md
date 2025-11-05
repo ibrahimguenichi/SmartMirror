@@ -572,8 +572,8 @@ erDiagram
     
     FACE_DATA {
         bigint id PK
-        bigint user_id FK UK
-        vector_512 embedding
+        bigint user_id FK,UK
+        float-array embedding "512-dimensional vector"
         timestamp created_at
         timestamp updated_at
     }
