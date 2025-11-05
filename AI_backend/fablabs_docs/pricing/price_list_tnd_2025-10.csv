@@ -1,0 +1,16 @@
+item,unit,price_tnd,notes
+tier,month,60,Adhésion standard
+tier_student,month,40,Justificatif requis
+tier_partner,month,0,Selon convention
+laser_cutter_use,hour,25,Certification requise
+laser_material_mdf3mm,sheet,8,Panneau 600x300
+laser_material_acrylic3mm,sheet,18,Panneau 600x300
+cnc_router_use,hour,35,Certification requise
+printer_3d_use,hour,10,Filament facturé séparément
+filament_pla,kg,35,Marques approuvées
+filament_petg,kg,45,Marques approuvées
+training_laser_level1,session,50,2h en groupe
+training_3d_level1,session,40,2h en groupe
+workshop_generic,session,30,Selon agenda
+late_cancel,occurrence,10,Annulation <24h
+no_show,occurrence,20,Absence non justifiée

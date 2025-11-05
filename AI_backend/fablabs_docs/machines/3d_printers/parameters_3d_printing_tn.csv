@@ -1,0 +1,5 @@
+material,nozzle_mm,layer_height_mm,nozzle_temp_c,bed_temp_c,speed_mm_s,retraction_mm,comments
+PLA,0.4,0.2,200,60,50,0.8,Profils Cura standard
+PETG,0.4,0.2,235,80,40,0.6,Enceinte recommandée
+ABS,0.4,0.2,245,100,45,0.8,Enceinte fermée, ventilation
+TPU,0.4,0.25,225,50,25,0.6,Vitesse réduite

@@ -1,29 +1,23 @@
 import axios from "axios";
-import { AppConstants } from "../util/constants";
 
 const axiosInstance = axios.create({
-  baseURL: AppConstants.BACKEND_URL,
-  withCredentials: true,
+  baseURL: "http://localhost:8080/api",
 });
 
-// Note: JWT token is automatically sent via HttpOnly cookie
-// No need to manually add it to Authorization header
+// Attach JWT automatically to all requests
+axiosInstance.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
-// Add response interceptor for error handling
+// Optional response interceptor for logging
 axiosInstance.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (res) => res,
   (error) => {
-    console.error('Response error:', error.response?.status, error.response?.data);
-    
-    // Handle unauthorized errors
-    if (error.response?.status === 401) {
-      console.log('Unauthorized - API call failed, letting component handle the redirect');
-      // Clear the JWT cookie but don't redirect
-      document.cookie = 'jwt=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-    }
-    
+    console.error("API Error:", error.response?.status, error.response?.data);
     return Promise.reject(error);
   }
 );

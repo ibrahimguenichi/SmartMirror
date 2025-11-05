@@ -52,6 +52,8 @@ public class SecurityConfiguration {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/users").hasAuthority("ADMIN")
+                // Allow AI service to access ai-profile; controller enforces service token header
+                .requestMatchers(HttpMethod.GET, "/api/users/*/ai-profile").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users/**").permitAll()
                 .requestMatchers("/api/face-recognition/**").permitAll()
                 .anyRequest().authenticated()

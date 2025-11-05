@@ -1,122 +1,238 @@
 import { useState, useRef, useEffect } from "react";
 import {
   Box,
-  Button,
   Input,
-  VStack,
-  HStack,
-  Text,
-  Heading,
+  Button,
   Flex,
+  Text,
+  Avatar,
   useColorModeValue,
-  Spinner,
+  VStack,
 } from "@chakra-ui/react";
-import axios from "axios";
+import { Bot, Send } from "lucide-react";
+import { chat } from "../api/llm";
+import { useAuth } from "../context/AuthContext";
 
 const Ai = () => {
+  const { user } = useAuth();
+
+  // Colors (hooks must be called at the top level)
+  const bg = useColorModeValue("gray.50", "gray.900");
+  const cardBg = useColorModeValue("white", "gray.800");
+  const border = useColorModeValue("gray.200", "gray.700");
+  const primary = useColorModeValue("orange.500", "orange.400");
+  const aiMessageBg = useColorModeValue("white", "gray.800");
+  const aiMessageColor = useColorModeValue("gray.800", "gray.100");
+  const inputBg = useColorModeValue("gray.50", "gray.700");
+
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([
+    {
+      id: "1",
+      role: "ai",
+      text: `Hello ${user?.firstName || "there"}! I'm your AI assistant. How can I help you today?`,
+      timestamp: new Date(),
+    },
+  ]);
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
+  // Scroll to bottom when messages update
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const sendMessage = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || loading) return;
 
-    const newMessages = [...messages, { role: "user", text: input }];
-    setMessages(newMessages);
+    const userMessage = {
+      id: Date.now().toString(),
+      role: "user",
+      text: input,
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:11434/chat", {
-        messages: newMessages,
-      });
-
-      setMessages([
-        ...newMessages,
-        { role: "ai", text: response.data.reply || "No response" },
-      ]);
+      const response = await chat(input, user?.id);
+      const aiMessage = {
+        id: (Date.now() + 1).toString(),
+        role: "ai",
+        text: response.data.response || "No response.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, aiMessage]);
     } catch (err) {
       console.error(err);
-      setMessages([
-        ...newMessages,
-        { role: "ai", text: "Error contacting LLM." },
-      ]);
+      const errorMsg = {
+        id: (Date.now() + 2).toString(),
+        role: "ai",
+        text: "Error contacting SmartMirror AI.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMsg]);
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <Flex
-      direction="column"
-      align="center"
-      justify="center"
-      p={6}
-      minH="100vh"
-      bg={useColorModeValue("gray.50", "gray.800")}
-    >
-      <Box
-        w={["100%", "600px"]}
-        bg={useColorModeValue("white", "gray.700")}
-        borderRadius="lg"
-        shadow="lg"
-        p={6}
-      >
-        <Heading size="md" mb={4} textAlign="center">
-          SmartMirror AI Chatbot
-        </Heading>
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
 
-        <VStack
-          spacing={3}
-          align="stretch"
-          h="400px"
-          overflowY="auto"
-          mb={4}
-          px={2}
+  return (
+    <Flex direction="column" h="100vh" px={25} py={8} bg={bg}>
+      {/* Header */}
+      <Flex
+        borderBottom="1px solid"
+        borderColor={border}
+        bg={cardBg}
+        backdropFilter="blur(8px)"
+        align="center"
+        justify="center"
+        py={4}
+      >
+        <Flex
+          w="full"
+          maxW="3xl"
+          align="center"
+          justify="space-between"
+          px={6}
         >
-          {messages.map((msg, i) => (
-            <Box
-              key={i}
-              bg={msg.role === "user" ? "blue.100" : "gray.100"}
-              alignSelf={msg.role === "user" ? "flex-end" : "flex-start"}
-              borderRadius="md"
-              p={3}
-              maxW="80%"
-              wordBreak="break-word"
+          <Flex align="center" gap={3}>
+            <Flex
+              bg={primary}
+              borderRadius="lg"
+              w={9}
+              h={9}
+              align="center"
+              justify="center"
             >
-              <Text fontWeight="bold" mb={1}>
-                {msg.role === "user" ? "You" : "AI"}
-              </Text>
-              <Text>{msg.text}</Text>
+              <Bot size={20} color="white" />
+            </Flex>
+            <Box>
+              <Text fontWeight="semibold">SmartMirror AI</Text>
+              <Flex align="center" gap={1}>
+                <Box w={2} h={2} borderRadius="full" bg={primary} />
+                <Text fontSize="xs" color="gray.500">
+                  Online
+                </Text>
+              </Flex>
             </Box>
+          </Flex>
+        </Flex>
+      </Flex>
+
+      {/* Chat Window */}
+      <Flex flex="1" overflowY="auto" justify="center">
+        <VStack
+          w="full"
+          maxW="3xl"
+          px={6}
+          py={8}
+          spacing={6}
+          align="stretch"
+        >
+          {messages.map((msg) => (
+            <Flex
+              key={msg.id}
+              justify={msg.role === "user" ? "flex-end" : "flex-start"}
+              gap={3}
+            >
+              {msg.role === "ai" && (
+                <Avatar size="sm" bg={primary} color="white">
+                  <Bot size={14} />
+                </Avatar>
+              )}
+
+              <Box
+                px={4}
+                py={3}
+                borderRadius="2xl"
+                maxW="75%"
+                bg={msg.role === "user" ? primary : aiMessageBg}
+                color={msg.role === "user" ? "white" : aiMessageColor}
+                border={msg.role === "user" ? "none" : `1px solid ${border}`}
+                boxShadow="sm"
+              >
+                <Text fontSize="sm" whiteSpace="pre-wrap">
+                  {msg.text}
+                </Text>
+              </Box>
+
+              {msg.role === "user" && (
+                <Avatar size="sm" bg="gray.200" color="gray.700" fontSize="xs">
+                  You
+                </Avatar>
+              )}
+            </Flex>
           ))}
+
+          {/* Typing Indicator */}
           {loading && (
-            <HStack alignSelf="flex-start" spacing={2}>
-              <Spinner size="sm" />
-              <Text>AI is typing...</Text>
-            </HStack>
+            <Flex gap={3}>
+              <Avatar size="sm" bg={primary} color="white">
+                <Bot size={14} />
+              </Avatar>
+              <Flex
+                px={4}
+                py={3}
+                borderRadius="2xl"
+                border={`1px solid ${border}`}
+                bg={cardBg}
+                align="center"
+                gap={1}
+              >
+                <Box w={2} h={2} borderRadius="full" bg="gray.400" />
+                <Box w={2} h={2} borderRadius="full" bg="gray.400" />
+                <Box w={2} h={2} borderRadius="full" bg="gray.400" />
+              </Flex>
+            </Flex>
           )}
+
           <div ref={messagesEndRef} />
         </VStack>
+      </Flex>
 
-        <HStack>
+      {/* Input Section */}
+      <Flex
+        borderTop="1px solid"
+        borderColor={border}
+        bg={cardBg}
+        backdropFilter="blur(8px)"
+        justify="center"
+      >
+        <Flex w="full" maxW="3xl" px={6} py={4} gap={2}>
           <Input
-            placeholder="Type your message..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-            bg={useColorModeValue("gray.50", "gray.600")}
+            onKeyDown={handleKeyPress}
+            placeholder="Type your message..."
+            bg={inputBg}
+            borderColor={border}
+            _focus={{
+              borderColor: primary,
+              boxShadow: `0 0 0 1px ${primary}`,
+            }}
           />
-          <Button colorScheme="blue" onClick={sendMessage} isLoading={loading}>
-            Send
+          <Button
+            onClick={sendMessage}
+            isDisabled={!input.trim() || loading}
+            colorScheme="orange"
+            bg={primary}
+            _hover={{ bg: "orange.600" }}
+            px={4}
+          >
+            <Send size={16} />
           </Button>
-        </HStack>
-      </Box>
+        </Flex>
+      </Flex>
     </Flex>
   );
 };
