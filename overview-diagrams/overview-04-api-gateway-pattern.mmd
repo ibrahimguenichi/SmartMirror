@@ -1,0 +1,64 @@
+graph LR
+    subgraph CLIENTS["📱 CLIENTS"]
+        Mobile["Mobile<br/>Device"]
+        Desktop["Desktop<br/>Browser"]
+        SmartMirror["Smart<br/>Mirror"]
+    end
+    
+    subgraph GATEWAY["🔌 API GATEWAY LAYER"]
+        REST["REST API<br/>http://backend:8080/api<br/><br/>types<br/>queries<br/>mutations"]
+        WS["WebSocket<br/>socket.io<br/><br/>real-time events"]
+    end
+    
+    subgraph SERVICES["⚙️ SERVICES LAYER"]
+        Auth["Authentication<br/>Service<br/><br/>• JWT<br/>• OAuth2<br/>• Face Auth"]
+        
+        User["User<br/>Service<br/><br/>• CRUD<br/>• Profiles<br/>• Roles"]
+        
+        Reservation["Reservation<br/>Service<br/><br/>• Create<br/>• Update<br/>• QR Codes"]
+        
+        AI["AI<br/>Service<br/><br/>• Face Rec<br/>• LLM Chat<br/>• Vectors"]
+    end
+    
+    subgraph PERSISTENCE["💾 PERSISTENCE LAYER"]
+        AppDB[("Application<br/>Database<br/><br/>PostgreSQL")]
+        VectorDB[("Vector<br/>Store<br/><br/>pgvector")]
+        Cache[("Cache<br/>Layer<br/><br/>In-Memory")]
+    end
+    
+    Mobile -->|HTTP/WS| REST
+    Desktop -->|HTTP/WS| REST
+    SmartMirror -->|HTTP/WS| REST
+    
+    Mobile -.->|Real-time| WS
+    Desktop -.->|Real-time| WS
+    SmartMirror -.->|Real-time| WS
+    
+    REST --> Auth
+    REST --> User
+    REST --> Reservation
+    REST --> AI
+    
+    WS -.-> Auth
+    WS -.-> User
+    
+    Auth --> AppDB
+    User --> AppDB
+    Reservation --> AppDB
+    AI --> VectorDB
+    AI --> AppDB
+    
+    Auth -.-> Cache
+    User -.-> Cache
+    
+    AppDB -.-> VectorDB
+    
+    classDef clients fill:#FF9800,stroke:#E65100,stroke-width:3px,color:#fff
+    classDef gateway fill:#2196F3,stroke:#0D47A1,stroke-width:3px,color:#fff
+    classDef services fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
+    classDef persistence fill:#9C27B0,stroke:#4A148C,stroke-width:3px,color:#fff
+    
+    class Mobile,Desktop,SmartMirror clients
+    class REST,WS gateway
+    class Auth,User,Reservation,AI services
+    class AppDB,VectorDB,Cache persistence

@@ -1,0 +1,86 @@
+graph TB
+    User([👤 User])
+    
+    subgraph "Step 1: Authentication"
+        Login["🔐 Login<br/>Email/Password or OAuth2"]
+        FaceAuth["😊 Face Recognition<br/>Biometric Auth"]
+    end
+    
+    subgraph "Step 2: Smart Mirror Interface"
+        Dashboard["📊 Dashboard<br/>Personal View"]
+        Modules["🧩 Modules<br/>Weather • News • Calendar"]
+        Camera["📷 Camera<br/>Live Face Detection"]
+        Chat["💬 AI Assistant<br/>LLM Chat"]
+    end
+    
+    subgraph "Step 3: Backend Processing"
+        API["🔌 REST API<br/>Spring Boot"]
+        AIService["🤖 AI Service<br/>FastAPI"]
+        Business["📋 Business Logic<br/>Reservations • Users"]
+        FaceML["🎯 Face ML<br/>InsightFace Model"]
+        LLMService["🧠 LLM Service<br/>Ollama"]
+    end
+    
+    subgraph "Step 4: Data Storage"
+        UserDB[("👥 Users<br/>PostgreSQL")]
+        ReservDB[("📅 Reservations<br/>PostgreSQL")]
+        FaceDB[("😊 Face Data<br/>pgvector<br/>512-dim vectors")]
+        KnowledgeDB[("📚 Knowledge<br/>FabLab Docs")]
+    end
+    
+    subgraph "Step 5: Response"
+        Display["✨ Display<br/>Updated UI"]
+        Notification["📧 Notifications<br/>Email/In-App"]
+        QRCode["📱 QR Code<br/>Access Token"]
+    end
+    
+    User -->|Interacts| Login
+    User -->|Scans Face| FaceAuth
+    
+    Login --> Dashboard
+    FaceAuth -->|Extract Embedding| AIService
+    
+    Dashboard --> Modules
+    Dashboard --> Camera
+    Dashboard --> Chat
+    
+    Modules -->|Fetch Data| API
+    Camera -->|Send Image| AIService
+    Chat -->|Send Message| AIService
+    
+    API --> Business
+    AIService --> FaceML
+    AIService --> LLMService
+    
+    Business --> UserDB
+    Business --> ReservDB
+    FaceML --> FaceDB
+    LLMService --> KnowledgeDB
+    
+    UserDB -.->|Return Data| API
+    ReservDB -.->|Return Data| API
+    FaceDB -.->|Match Vector| FaceML
+    KnowledgeDB -.->|Context| LLMService
+    
+    API -.->|Response| Display
+    AIService -.->|AI Response| Display
+    API -.->|Trigger| Notification
+    API -.->|Generate| QRCode
+    
+    Display -.->|Show| User
+    Notification -.->|Notify| User
+    QRCode -.->|Scan| User
+    
+    classDef userClass fill:#FF6B6B,stroke:#C44569,stroke-width:3px,color:#fff
+    classDef authClass fill:#4ECDC4,stroke:#1A535C,stroke-width:2px,color:#fff
+    classDef uiClass fill:#95E1D3,stroke:#3D5A80,stroke-width:2px,color:#000
+    classDef backendClass fill:#F7DC6F,stroke:#D4AC0D,stroke-width:2px,color:#000
+    classDef dataClass fill:#BB8FCE,stroke:#7D3C98,stroke-width:2px,color:#fff
+    classDef responseClass fill:#85C1E2,stroke:#3498DB,stroke-width:2px,color:#000
+    
+    class User userClass
+    class Login,FaceAuth authClass
+    class Dashboard,Modules,Camera,Chat uiClass
+    class API,AIService,Business,FaceML,LLMService backendClass
+    class UserDB,ReservDB,FaceDB,KnowledgeDB dataClass
+    class Display,Notification,QRCode responseClass

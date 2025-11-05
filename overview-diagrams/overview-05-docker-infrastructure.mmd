@@ -1,0 +1,67 @@
+graph TB
+    subgraph Internet["🌐 INTERNET"]
+        Users["Users"]
+        NgrokCloud["Ngrok Cloud<br/>Tunneling Service"]
+    end
+    
+    subgraph DockerHost["🐳 DOCKER HOST (Linux)"]
+        subgraph Network["smartmirror_network (Bridge)"]
+            
+            subgraph Containers["📦 CONTAINERS"]
+                Backend["backend<br/>Spring Boot<br/>:8080"]
+                AI["AI_backend<br/>FastAPI<br/>:8000"]
+                DB["SmartMirror-db<br/>PostgreSQL+pgvector<br/>:5432"]
+                Ollama["ollama_service<br/>LLM<br/>:11434"]
+                PgWeb["pgweb_dev<br/>DB UI<br/>:55432"]
+                NgrokB["ngrok_backend<br/>Tunnel<br/>Backend"]
+                NgrokF["ngrok_frontend<br/>Tunnel<br/>Frontend"]
+            end
+            
+            subgraph Volumes["💾 VOLUMES"]
+                V1["pgdata<br/>PostgreSQL Data"]
+                V2["insightface_models<br/>AI Models"]
+                V3["llm_models<br/>Ollama Models"]
+                V4["ai_knowledge<br/>FabLab Docs"]
+            end
+        end
+        
+        subgraph HostProcess["💻 HOST PROCESS"]
+            MagicMirror["MagicMirror<br/>Node.js/Electron<br/>:5173"]
+        end
+    end
+    
+    Users -->|HTTPS| NgrokCloud
+    NgrokCloud -->|Tunnel| NgrokB
+    NgrokCloud -->|Tunnel| NgrokF
+    
+    NgrokB -.->|Proxy| Backend
+    NgrokF -.->|Proxy| MagicMirror
+    
+    MagicMirror -->|REST| Backend
+    MagicMirror -->|REST| AI
+    
+    Backend -->|JDBC| DB
+    AI -->|pgvector| DB
+    AI -->|HTTP| Ollama
+    AI -.->|API| Backend
+    
+    PgWeb -->|Admin| DB
+    
+    DB -.->|Mount| V1
+    AI -.->|Mount| V2
+    AI -.->|Mount| V4
+    Ollama -.->|Mount| V3
+    
+    Backend -->|Health Check| Backend
+    AI -->|Health Check| AI
+    DB -->|Health Check| DB
+    
+    classDef internet fill:#FF5722,stroke:#BF360C,stroke-width:2px,color:#fff
+    classDef container fill:#2196F3,stroke:#0D47A1,stroke-width:2px,color:#fff
+    classDef volume fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    classDef host fill:#4CAF50,stroke:#1B5E20,stroke-width:2px,color:#fff
+    
+    class Users,NgrokCloud internet
+    class Backend,AI,DB,Ollama,PgWeb,NgrokB,NgrokF container
+    class V1,V2,V3,V4 volume
+    class MagicMirror host

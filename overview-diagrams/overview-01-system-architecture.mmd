@@ -1,0 +1,54 @@
+graph TB
+    subgraph FRONTEND["🖥️ FRONTEND"]
+        Mobile["📱<br/>Mobile Device"]
+        Tablet["📱<br/>Tablet"]
+        Mirror["🪞<br/>Smart Mirror<br/>Display"]
+        
+        Mobile -.-> UI
+        Tablet -.-> UI
+        Mirror -.-> UI
+        
+        UI["MagicMirror UI<br/>Node.js + Electron<br/>Port: 5173"]
+    end
+    
+    subgraph MIDDLEWARE["⚙️ BACKEND SERVICES"]
+        SpringBoot["Spring Boot API<br/>Java 17<br/>Port: 8080<br/><br/>• User Management<br/>• Reservations<br/>• Authentication<br/>• QR Codes"]
+        
+        AI["AI Backend<br/>FastAPI + Python<br/>Port: 8000<br/><br/>• Face Recognition<br/>• LLM Chatbot<br/>• InsightFace Model"]
+        
+        LLM["Ollama LLM<br/>Local AI Service<br/>Port: 11434<br/><br/>• Conversational AI<br/>• Context-Aware"]
+    end
+    
+    subgraph DATA["💾 DATA LAYER"]
+        DB[("PostgreSQL<br/>+ pgvector<br/>Port: 5432<br/><br/>• Users<br/>• Reservations<br/>• Face Embeddings<br/>• Vector Search")]
+    end
+    
+    subgraph EXTERNAL["🌐 EXTERNAL SERVICES"]
+        OAuth["OAuth2 Providers<br/>Google • GitHub"]
+        Email["Email Service<br/>SMTP"]
+        Weather["Weather API<br/>OpenMeteo"]
+        News["News Feeds<br/>RSS"]
+    end
+    
+    UI -->|REST API<br/>JSON| SpringBoot
+    UI -->|Face & Chat<br/>JSON| AI
+    
+    SpringBoot -->|JDBC<br/>JPA| DB
+    AI -->|pgvector<br/>Embeddings| DB
+    AI -->|HTTP| LLM
+    AI -.->|User Profile| SpringBoot
+    
+    SpringBoot -.->|OAuth2| OAuth
+    SpringBoot -.->|Notifications| Email
+    UI -.->|HTTP| Weather
+    UI -.->|HTTP| News
+    
+    classDef frontend fill:#FF9800,stroke:#E65100,stroke-width:3px,color:#fff
+    classDef backend fill:#2196F3,stroke:#0D47A1,stroke-width:3px,color:#fff
+    classDef data fill:#4CAF50,stroke:#1B5E20,stroke-width:3px,color:#fff
+    classDef external fill:#9C27B0,stroke:#4A148C,stroke-width:2px,color:#fff
+    
+    class UI frontend
+    class SpringBoot,AI,LLM backend
+    class DB data
+    class OAuth,Email,Weather,News external
