@@ -86,7 +86,7 @@ async function detectAndSend(video) {
       return
     }
 
-    const signupURL = "assuring-stirring-pug.ngrok-free.app/home/signup" // Replace with real URL
+    const signupURL = "assuring-stirring-pug.ngrok-free.app/home/signup"
     complementsContainer.style.display = "none"
     qrContainer.id = "qr-container-displayed"
 
@@ -266,21 +266,44 @@ async function detectAndSend(video) {
               const response = await fetch("http://localhost:8080/api/auth/face_login", {
                 method: "POST",
                 body: formData,
-                credentials: "include"
               })
 
               const result = await response.json()
-              console.log("🎉 API Response:", result)
+              console.log("🎯 Face login response:", result)
 
-              if (response.ok) {
-                console.log("✅ Login test success")
-                stopScanAnimation()
+              if (response.ok && result?.token) {
+                console.log("✅ Face login success:", result)
 
-                window.dispatchEvent(new CustomEvent("userLoginSuccess", {
-                  detail: result
-                }))
+                // 1️⃣ Store JWT token in localStorage (just like normal login)
+                  console.log("saving token to storage: ", result.token)
+                  localStorage.setItem("token", result.token)
 
-                showReactApp()
+                // 2️⃣ Fetch the authenticated user info (similar to getCurrentUser)
+                try {
+                  const response = await fetch("http://localhost:8080/api/auth/me", {
+                    method: "GET",
+                    headers: {
+                      Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                  })
+
+                  if (!response.ok) throw new Error("Failed to fetch current user")
+
+                  const userData = await response.json()
+                  console.log("🙋‍♂️ Logged-in user:", userData)
+
+                  // 3️⃣ Save user data locally for the React app to consume
+                  localStorage.setItem("user", JSON.stringify(userData))
+
+                  // 4️⃣ Dispatch an event to notify the React app
+                  window.dispatchEvent(new CustomEvent("userLoginSuccess", { detail: userData }))
+
+                  // 5️⃣ Launch the React microfrontend
+                  showReactApp()
+                } catch (error) {
+                  console.error("❌ Failed to fetch authenticated user:", error)
+                  localStorage.removeItem("token")
+                }
               } else {
                 console.warn("❌ Login failed")
                 handleFailedAttempt()

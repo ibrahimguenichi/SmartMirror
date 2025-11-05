@@ -2,7 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import orangeLogo from '@/assets/orange_logo.svg';
 import axiosInstance from '../api/axiosInstance';
+import axiosSignupInstance from '../api/axiosSignupInstance';
 import { toast } from 'react-toastify';
+import axios from 'axios';
 
 const SignUp = () => {
   // Form stage state
@@ -76,8 +78,7 @@ const SignUp = () => {
           "confirmPassword": formData.confirmPassword,
           "role": formData.role,
         }
-        console.log("ssss")
-        response = await axiosInstance.post('/users/client', client_data);
+        response = await axiosSignupInstance.post('/users/client', client_data);
         console.log(response)
       } else if(userType === 'employee') {
         const employee_data = {
@@ -94,7 +95,7 @@ const SignUp = () => {
           "department": formData.department,
           "startDate": formData.startDate
         }
-        response = await axiosInstance.post('/users/employee', employee_data);
+        response = await axiosSignupInstance.post('/users/employee', employee_data);
       }
       if (response && response.status === 200) {
         const userId = response.data.id;
@@ -104,7 +105,7 @@ const SignUp = () => {
           const formDataImg = new FormData();
           formDataImg.append('file', profileImage);
           try {
-            const uploadRes = await axiosInstance.post(`/users/${userId}/profile-image`, formDataImg, {
+            const uploadRes = await axiosSignupInstance.post(`/users/${userId}/profile-image`, formDataImg, {
               headers: { 'Content-Type': 'multipart/form-data' },
             });
             if (uploadRes.status === 200) {
@@ -226,13 +227,11 @@ const SignUp = () => {
         formData.append('image', blob, 'face.jpg');
         formData.append('userId', createdUserId);
 
-        console.log('aaaa')
-        const response = await axiosInstance.post('/face-recognition/upload_face', formData, {
+        const response = await axiosSignupInstance.post('/face-recognition/upload_face', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
         });
-        console.log('bbbb')
         if (response.status === 200) {
           console.log('Face embedding response:', response.data);
           toast.success('Face registered successfully!');

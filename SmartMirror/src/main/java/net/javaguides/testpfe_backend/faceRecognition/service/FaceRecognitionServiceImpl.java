@@ -2,6 +2,7 @@ package net.javaguides.testpfe_backend.faceRecognition.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javaguides.testpfe_backend.config.ApplicationProperties;
 import net.javaguides.testpfe_backend.faceRecognition.domain.FaceData;
 import net.javaguides.testpfe_backend.faceRecognition.dto.FaceDataSimilarityDTO;
 import net.javaguides.testpfe_backend.faceRecognition.dto.FaceDataWithDistanceDTO;
@@ -31,10 +32,10 @@ import java.util.stream.IntStream;
 public class FaceRecognitionServiceImpl implements IFaceRecognitionService {
     private final FaceDataRepository faceDataRepository;
     private final UserRepository userRepository;
+    private final ApplicationProperties applicationProperties;
     private final RestTemplate restTemplate = new RestTemplate();
 
-    @Value("${AI_BASE_URL}")
-    private String faceApiUrl;
+    private String faceApiUrl = "http://localhost:8000/api";
 
     @Override
     public void saveFaceEmbedding(Long userId, float[] embeddingArray) {
@@ -68,6 +69,7 @@ public class FaceRecognitionServiceImpl implements IFaceRecognitionService {
 
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
+        log.info("url: ", faceApiUrl);
         ResponseEntity<FaceEmbeddingResponse> response = restTemplate.exchange(
                 faceApiUrl + "/face-recognition/extract-embedding/" + "?userId=" + userId,
                 HttpMethod.POST,

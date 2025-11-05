@@ -4,6 +4,7 @@ import App from './App.jsx'
 import { BrowserRouter } from 'react-router-dom';
 import { ChakraProvider } from '@chakra-ui/react'
 import { AuthProvider } from './context/AuthContext.jsx';
+import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 const container = document.getElementById('react-root');
 if (container) {
@@ -12,7 +13,9 @@ if (container) {
     <BrowserRouter basename="/home" >
       <AuthProvider>
         <ChakraProvider>
-          <App />
+          {/* <ProtectedRoute> */}
+            <App />
+          {/* </ProtectedRoute> */}
         </ChakraProvider>
       </AuthProvider>
     </BrowserRouter>

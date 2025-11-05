@@ -2,25 +2,30 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { getCurrentUser, login, logout } from "../api/auth";
 
 const AuthContext = createContext();
-// eslint-disable-next-line react-refresh/only-export-components
+
+// ✅ Hook to access authentication state easily
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);      // full user object
+  const [user, setUser] = useState(null);     // authenticated user data
   const [loading, setLoading] = useState(true);
 
-  // Initialize auth on app load
+  // 🔹 Load user when the app starts (if token exists)
   useEffect(() => {
     const initializeAuth = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
       try {
-        // Try to get current user - this will work if JWT cookie exists
-        const res = await getCurrentUser();    // fetch full user from backend
+        const res = await getCurrentUser(); // fetch user with token
         setUser(res.data || null);
       } catch (error) {
         console.error("Auth initialization failed:", error);
         setUser(null);
-        // Clear any invalid JWT cookie
-        document.cookie = 'jwt=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        localStorage.removeItem("token");
       } finally {
         setLoading(false);
       }
@@ -29,39 +34,33 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
   }, []);
 
-  // Login handler
+  // 🔹 Login handler
   const handleLogin = async (email, password) => {
     try {
-      // Clear any existing user state first
       setUser(null);
-      await login(email, password);            // sets HttpOnly cookie in backend
-      
-      // Small delay to ensure cookie is set
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      const res = await getCurrentUser();      // fetch full user after login
-      setUser(res.data || null);
+      const res = await login(email, password); // login() stores token internally
+      const userResponse = await getCurrentUser(); // fetch user data
+      setUser(userResponse.data || null);
+      return res;
     } catch (error) {
       console.error("Login failed:", error);
       throw error;
     }
   };
 
-  // Logout handler
+  // 🔹 Logout handler
   const handleLogout = async () => {
     try {
-      await logout();                           // clears cookie in backend
+      await logout();
     } catch (error) {
       console.error("Logout failed:", error);
     } finally {
-      // Clear user state immediately
+      localStorage.removeItem("token");
       setUser(null);
-      // Clear JWT cookie on frontend as well
-      document.cookie = 'jwt=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
     }
   };
 
-  // Optional: decode role or userId if needed
+  // 🔹 Extract role and ID if present
   const userId = user?.id || null;
   const userRole = user?.userRole || null;
 
@@ -76,9 +75,10 @@ export const AuthProvider = ({ children }) => {
         userRole,
         isAdmin: userRole === "ADMIN",
         isUser: userRole === "USER",
+        isAuthenticated: !!user,
       }}
     >
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };

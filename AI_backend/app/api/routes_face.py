@@ -4,6 +4,7 @@ import tempfile
 from app.api.api_client import send_embedding
 from app.models.face_detector import FaceDetector
 from typing import Any, List
+from app.config import SPRING_BACKEND_URL
 
 router = APIRouter()
 service = FaceService()
@@ -24,10 +25,9 @@ async def extract_embedding(userId: int, file: UploadFile = File(...)) -> dict[s
 
         # Get embedding
         embedding: List[float] = detector.get_embedding(tmp_path)  # make sure get_embedding returns List[float]
-        print(f"Embedding extracted: {embedding[:5]}...")
 
         # Send to Spring Boot backend (convert userId to str if needed)
-        response: Any = await send_embedding(str(userId), embedding, "http://backend:8080/api/face-recognition/save_embedding")
+        response: Any = await send_embedding(str(userId), embedding, f"{SPRING_BACKEND_URL}/face-recognition/save_embedding")
         print(f"Response from Spring Boot: {response}")
 
         return {"status": "success", "embedding": embedding, "backend_response": response}
